@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SimForge — Universal Simulation Sandbox</title>
+
+<!-- Supabase Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* ... (keep all existing CSS from previous version) ... */
+
+/* Add these new styles */
+#auth-section { display:flex; align-items:center; gap:10px; }
+.user-menu { position:relative; }
+.user-avatar { width:32px; height:32px; border-radius:50%; cursor:pointer; border:2px solid var(--border2); transition:border-color 0.12s; }
+.user-avatar:hover { border-color:var(--accent); }
+.user-dropdown { position:absolute; top:40px; right:0; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); min-width:180px; display:none; z-index:50; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+.user-dropdown.open { display:block; }
+.dropdown-item { padding:10px 14px; font-size:12px; color:var(--text2); cursor:pointer; transition:background 0.1s; display:flex; align-items:center; gap:8px; }
+.dropdown-item:hover { background:var(--surface2); color:var(--text); }
+.dropdown-item:first-child { border-radius:var(--radius) var(--radius) 0 0; }
+.dropdown-item:last-child { border-radius:0 0 var(--radius) var(--radius); }
+.dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
+
+/* Gallery page */
+#gallery-screen { display:none; flex:1; overflow-y:auto; padding:32px 24px 40px; }
+.gallery-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.gallery-title { font-size:24px; font-weight:700; }
+.gallery-filters { display:flex; gap:8px; }
+.gallery-sort { background:var(--surface2); border:1px solid var(--border2); color:var(--text); padding:6px 12px; border-radius:var(--radius); font-size:12px; cursor:pointer; }
+.gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+.gallery-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:8px; }
+.gallery-card:hover { border-color:var(--accent); background:var(--surface2); transform:translateY(-2px); }
+.gallery-card-header { display:flex; align-items:center; gap:10px; }
+.gallery-card-icon { font-size:28px; }
+.gallery-card-info { flex:1; }
+.gallery-card-name { font-size:14px; font-weight:600; color:var(--text); margin-bottom:2px; }
+.gallery-card-author { font-size:11px; color:var(--text3); }
+.gallery-card-desc { font-size:12px; color:var(--text2); line-height:1.5; }
+.gallery-card-footer { display:flex; align-items:center; gap:12px; margin-top:auto; padding-top:10px; border-top:1px solid var(--border); }
+.gallery-stat { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text3); }
+.gallery-stat .stat-icon { font-size:13px; }
+.gallery-card-cat { font-size:10px; padding:2px 8px; border-radius:10px; background:var(--accent-dim); color:var(--accent); font-weight:600; margin-left:auto; }
+
+/* Like button */
+.like-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border:1px solid var(--border2); border-radius:var(--radius); background:var(--surface2); color:var(--text2); font-size:12px; cursor:pointer; transition:all 0.12s; }
+.like-btn:hover { border-color:var(--red); color:var(--red); }
+.like-btn.liked { background:var(--red-dim); border-color:var(--red); color:var(--red); }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div id="logo" onclick="goHome()" title="Home">
+    <div id="logo-dot"></div>
+    SimForge
+  </div>
+  <div id="topbar-home-btns">
+    <button class="topbar-btn" onclick="showGallery()">🌐 Gallery</button>
+    <button class="topbar-btn accent" onclick="newSim()">＋ New Simulation</button>
+  </div>
+  <div id="topbar-editor-btns" style="display:none; gap:8px; align-items:center;">
+    <button class="topbar-btn" onclick="goHome()">← Library</button>
+    <span id="sim-name-display" style="font-size:12px;color:var(--text2);font-style:italic;"></span>
+  </div>
+  <div class="spacer"></div>
+  <span id="fps-badge" style="display:none">-- FPS</span>
+  <div id="auth-section"></div>
+</div>
+
+<!-- Shared simulation banner -->
+<div id="shared-banner">
+  <span>🔗</span>
+  <span id="shared-banner-text">Viewing a shared simulation</span>
+  <button onclick="forkSharedSim()">🍴 Fork & Edit</button>
+</div>
+
+<!-- ══════════════ HOME SCREEN ══════════════ -->
+<div id="home-screen">
+  <!-- ... (keep existing home screen HTML) ... -->
+</div>
+
+<!-- ══════════════ GALLERY SCREEN ══════════════ -->
+<div id="gallery-screen">
+  <div class="gallery-header">
+    <div class="gallery-title">🌐 Community Gallery</div>
+    <div class="gallery-filters">
+      <select class="gallery-sort" id="gallery-sort" onchange="loadGallery()">
+        <option value="recent">Most Recent</option>
+        <option value="popular">Most Popular</option>
+        <option value="liked">Most Liked</option>
+      </select>
+    </div>
+  </div>
+  <div class="gallery-grid" id="gallery-grid"></div>
+</div>
+
+<!-- ══════════════ EDITOR SCREEN ══════════════ -->
+<div id="editor-screen">
+  <!-- ... (keep existing editor screen HTML) ... -->
+</div>
+
+<!-- Save Modal -->
+<div id="save-modal">
+  <div class="modal-box">
+    <div class="modal-title">Save Simulation</div>
+    <div class="modal-row"><label>Name</label><input id="modal-name" type="text" placeholder="My Simulation"></div>
+    <div class="modal-row"><label>Description</label><textarea id="modal-desc" placeholder="What does this simulate?"></textarea></div>
+    <div class="modal-row"><label>Icon (emoji)</label><input id="modal-icon" type="text" placeholder="🔬" maxlength="4" style="width:80px"></div>
+    <div class="modal-row"><label>Category</label>
+      <select id="modal-category"></select>
+    </div>
+    <div class="modal-row">
+      <label><input type="checkbox" id="modal-public" checked> Make this simulation public</label>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeSaveModal()">Cancel</button>
+      <button class="modal-save" onclick="saveSimulation()">Save to Library</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share Toast -->
+<div id="share-toast">🔗 Share link copied to clipboard!</div>
+
+<script>
+// ═══════════════════════════════════════════
+// SUPABASE INITIALIZATION
+// ═══════════════════════════════════════════
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co'; // REPLACE THIS
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY'; // REPLACE THIS
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let currentSimSlug = null;
+
+// ═══════════════════════════════════════════
+// AUTHENTICATION
+// ═══════════════════════════════════════════
+async function initAuth() {
+  const { data: { session } } = await supabase.auth.getSession();
+  currentUser = session?.user || null;
+  renderAuthSection();
+  
+  supabase.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user || null;
+    renderAuthSection();
+  });
+}
+
+function renderAuthSection() {
+  const section = document.getElementById('auth-section');
+  if (!currentUser) {
+    section.innerHTML = `
+      <button class="topbar-btn" onclick="loginWithGitHub()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        Sign in with GitHub
+      </button>
+    `;
+  } else {
+    const avatarUrl = currentUser.user_metadata?.avatar_url || '';
+    const username = currentUser.user_metadata?.user_name || 'User';
+    section.innerHTML = `
+      <div class="user-menu">
+        <img src="${avatarUrl}" alt="${username}" class="user-avatar" onclick="toggleUserMenu()">
+        <div class="user-dropdown" id="user-dropdown">
+          <div class="dropdown-item" onclick="showMySimulations()">
+            <span>📁</span> My Simulations
+          </div>
+          <div class="dropdown-item" onclick="showGallery()">
+            <span>🌐</span> Browse Gallery
+          </div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" onclick="logout()">
+            <span>🚪</span> Sign out
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function toggleUserMenu() {
+  const dropdown = document.getElementById('user-dropdown');
+  dropdown.classList.toggle('open');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('user-dropdown');
+  if (dropdown && !e.target.closest('.user-menu')) {
+    dropdown.classList.remove('open');
+  }
+});
+
+async function loginWithGitHub() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'github',
+    options: { redirectTo: window.location.origin }
+  });
+  if (error) showError('Login failed: ' + error.message);
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = '/';
+}
+
+// ═══════════════════════════════════════════
+// GALLERY
+// ═══════════════════════════════════════════
+async function showGallery() {
+  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('editor-screen').style.display = 'none';
+  document.getElementById('gallery-screen').style.display = 'block';
+  await loadGallery();
+}
+
+async function loadGallery() {
+  const sort = document.getElementById('gallery-sort').value;
+  let query = supabase
+    .from('simulations')
+    .select(`
+      *,
+      profiles:user_id (username, avatar_url)
+    `)
+    .eq('is_public', true);
+  
+  if (sort === 'popular') {
+    query = query.order('views', { ascending: false });
+  } else if (sort === 'liked') {
+    query = query.order('likes', { ascending: false });
+  } else {
+    query = query.order('created_at', { ascending: false });
+  }
+  
+  const { data, error } = await query.limit(50);
+  
+  if (error) {
+    console.error('Gallery load error:', error);
+    return;
+  }
+  
+  renderGallery(data || []);
+}
+
+function renderGallery(simulations) {
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = '';
+  
+  if (simulations.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">No simulations yet. Be the first to share one!</div>';
+    return;
+  }
+  
+  simulations.forEach(sim => {
+    const card = document.createElement('div');
+    card.className = 'gallery-card';
+    const authorName = sim.profiles?.username || 'Anonymous';
+    const catInfo = CATEGORIES[sim.category] || { name: sim.category, icon: '📁' };
+    
+    card.innerHTML = `
+      <div class="gallery-card-header">
+        <div class="gallery-card-icon">${sim.icon || '🔬'}</div>
+        <div class="gallery-card-info">
+          <div class="gallery-card-name">${sim.name}</div>
+          <div class="gallery-card-author">by ${authorName}</div>
+        </div>
+      </div>
+      <div class="gallery-card-desc">${sim.description || 'No description'}</div>
+      <div class="gallery-card-footer">
+        <div class="gallery-stat">
+          <span class="stat-icon">👁️</span>
+          <span>${sim.views || 0}</span>
+        </div>
+        <div class="gallery-stat">
+          <span class="stat-icon">❤️</span>
+          <span>${sim.likes || 0}</span>
+        </div>
+        <div class="gallery-card-cat">${catInfo.icon} ${catInfo.name}</div>
+      </div>
+    `;
+    
+    card.onclick = () => loadSharedSimBySlug(sim.slug);
+    grid.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════
+// SAVE SIMULATION (Updated for Supabase)
+// ═══════════════════════════════════════════
+async function saveSimulation() {
+  if (!currentUser) {
+    showError('Please sign in to save simulations.');
+    return;
+  }
+  
+  const name = document.getElementById('modal-name').value.trim() || 'Untitled';
+  const desc = document.getElementById('modal-desc').value.trim();
+  const icon = document.getElementById('modal-icon').value.trim() || '🔬';
+  const category = document.getElementById('modal-category').value;
+  const isPublic = document.getElementById('modal-public').checked;
+  
+  try {
+    let simData;
+    
+    if (currentSimId) {
+      // Update existing
+      const { data, error } = await supabase
+        .from('simulations')
+        .update({
+          name,
+          description: desc,
+          icon,
+          category,
+          code: codeEditor.value,
+          is_public: isPublic,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentSimId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      simData = data;
+      showOk('Updated: ' + name);
+    } else {
+      // Create new
+      const slug = generateSlug();
+      const { data, error } = await supabase
+        .from('simulations')
+        .insert({
+          slug,
+          name,
+          description: desc,
+          icon,
+          category,
+          code: codeEditor.value,
+          author_id: currentUser.id,
+          is_public: isPublic
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      simData = data;
+      currentSimId = simData.id;
+      currentSimSlug = simData.slug;
+      showOk('Saved: ' + name);
+    }
+    
+    currentSimName = name;
+    currentSimCategory = category;
+    document.getElementById('sim-name-display').textContent = name;
+    closeSaveModal();
+    
+    // Update URL
+    history.replaceState(null, '', '/s/' + simData.slug);
+    
+  } catch(e) {
+    showError('Save failed: ' + e.message);
+  }
+}
+
+function generateSlug() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// ═══════════════════════════════════════════
+// LOAD SHARED SIMULATION (Updated for Supabase)
+// ═══════════════════════════════════════════
+async function loadSharedSimBySlug(slug) {
+  const { data: sim, error } = await supabase
+    .from('simulations')
+    .select(`
+      *,
+      profiles:user_id (username, avatar_url)
+    `)
+    .eq('slug', slug)
+    .single();
+  
+  if (error || !sim) {
+    showError('Simulation not found');
+    return;
+  }
+  
+  // Increment view count
+  await supabase.rpc('increment_views', { sim_id: sim.id });
+  
+  isSharedSim = true;
+  currentSimSlug = sim.slug;
+  currentSimId = sim.id;
+  
+  document.getElementById('shared-banner').classList.add('visible');
+  document.getElementById('shared-banner-text').textContent = 
+    `🔗 Viewing "${sim.name}" by ${sim.profiles?.username || 'Anonymous'}`;
+  
+  openEditor(sim.code, sim.name, sim.category, null, null);
+  history.replaceState(null, '', '/s/' + sim.slug);
+}
+
+// ═══════════════════════════════════════════
+// LIKE SIMULATION
+// ═══════════════════════════════════════════
+async function toggleLike(simId) {
+  if (!currentUser) {
+    showError('Please sign in to like simulations.');
+    return;
+  }
+  
+  // Check if already liked
+  const { data: existing } = await supabase
+    .from('likes')
+    .select()
+    .eq('user_id', currentUser.id)
+    .eq('simulation_id', simId)
+    .single();
+  
+  if (existing) {
+    // Unlike
+    await supabase.from('likes').delete().eq('user_id', currentUser.id).eq('simulation_id', simId);
+    await supabase.rpc('decrement_likes', { sim_id: simId });
+  } else {
+    // Like
+    await supabase.from('likes').insert({ user_id: currentUser.id, simulation_id: simId });
+    await supabase.rpc('increment_likes', { sim_id: simId });
+  }
+  
+  // Refresh gallery if on that page
+  if (document.getElementById('gallery-screen').style.display === 'block') {
+    await loadGallery();
+  }
+}
+
+// Add these RPC functions to your Supabase SQL:
+/*
+create or replace function public.increment_likes(sim_id uuid)
+returns void as $$
+begin
+  update public.simulations set likes = likes + 1 where id = sim_id;
+end;
+$$ language plpgsql security definer;
+
+create or replace function public.decrement_likes(sim_id uuid)
+returns void as $$
+begin
+  update public.simulations set likes = greatest(0, likes - 1) where id = sim_id;
+end;
+$$ language plpgsql security definer;
+*/
+
+// ═══════════════════════════════════════════
+// SHARE SIMULATION (Updated for Supabase)
+// ═══════════════════════════════════════════
+async function shareSimulation() {
+  if (!currentSimSlug) {
+    showError('Please save the simulation first to get a share link.');
+    return;
+  }
+  
+  const url = window.location.origin + '/s/' + currentSimSlug;
+  copyToClipboard(url);
+}
+
+// ═══════════════════════════════════════════
+// URL ROUTING (Updated for clean URLs)
+// ═══════════════════════════════════════════
+function handleRouting() {
+  const path = window.location.pathname;
+  
+  // Check if it's a simulation URL: /s/slug
+  const simMatch = path.match(/^\/s\/([a-z0-9]+)$/);
+  if (simMatch) {
+    const slug = simMatch[1];
+    loadSharedSimBySlug(slug);
+    return;
+  }
+  
+  // Check for legacy hash-based URLs
+  const hash = window.location.hash;
+  if (hash.startsWith('#preset=')) {
+    const key = hash.replace('#preset=', '');
+    if (PRESETS[key]) {
+      loadPreset(key);
+      return;
+    }
+  }
+  
+  // Default: show home
+  goHome();
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+initAuth();
+handleRouting();
+</script>
+</body>
+</html>
