@@ -21,7 +21,6 @@
 }
 body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif; font-size:13px; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
 
-/* ── TOPBAR ── */
 #topbar { display:flex; align-items:center; gap:10px; padding:0 14px; height:48px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
 #logo { font-size:15px; font-weight:700; letter-spacing:-0.02em; display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
 #logo-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
@@ -31,7 +30,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .topbar-btn:hover { background:var(--surface3); color:var(--text); border-color:rgba(255,255,255,0.22); }
 .topbar-btn.accent { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
 
-/* ── AUTH ── */
 #auth-section { display:flex; align-items:center; gap:10px; }
 .user-menu { position:relative; }
 .user-avatar { width:32px; height:32px; border-radius:50%; cursor:pointer; border:2px solid var(--border2); transition:border-color 0.12s; object-fit: cover; }
@@ -44,7 +42,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .dropdown-item:last-child { border-radius:0 0 var(--radius) var(--radius); }
 .dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
 
-/* ── HOME SCREEN ── */
 #home-screen { flex:1; overflow-y:auto; padding:32px 24px 40px; display:flex; flex-direction:column; gap:28px; }
 .home-hero { display:flex; flex-direction:column; align-items:center; gap:0; }
 #hero-canvas { border-radius:var(--radius-lg); border:1px solid var(--border); }
@@ -58,7 +55,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .btn-secondary:hover { background:var(--surface3); border-color:rgba(255,255,255,0.22); }
 .section-title { font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text3); margin-bottom:10px; }
 
-/* ── CATEGORY BAR ── */
 .category-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:4px; }
 .cat-pill { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:20px; border:1px solid var(--border2); background:var(--surface); color:var(--text2); font-size:11.5px; font-weight:500; cursor:pointer; transition:all 0.12s; white-space:nowrap; }
 .cat-pill:hover { background:var(--surface2); color:var(--text); border-color:rgba(255,255,255,0.22); }
@@ -66,7 +62,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .cat-pill .cat-icon { font-size:13px; }
 .cat-pill .cat-count { font-family:var(--mono); font-size:10px; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:8px; }
 
-/* ── LIBRARY GRID ── */
 .lib-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
 .sim-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:5px; position:relative; }
 .sim-card:hover { border-color:var(--accent); background:var(--surface2); }
@@ -82,7 +77,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .sim-card:hover .sim-card-cat { display:none; }
 .sim-card-del:hover { background:var(--red-dim); color:var(--red); }
 
-/* ── GALLERY SCREEN ── */
 #gallery-screen { display:none; flex:1; overflow-y:auto; padding:32px 24px 40px; }
 .gallery-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
 .gallery-title { font-size:24px; font-weight:700; }
@@ -100,7 +94,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .gallery-stat { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text3); }
 .gallery-card-cat { font-size:10px; padding:2px 8px; border-radius:10px; background:var(--accent-dim); color:var(--accent); font-weight:600; margin-left:auto; }
 
-/* ── EDITOR SCREEN ── */
 #editor-screen { display:none; flex:1; flex-direction:column; overflow:hidden; }
 #main { display:flex; flex:1; overflow:hidden; }
 #left-panel { display:flex; flex-direction:column; flex:0 0 60%; border-right:1px solid var(--border); overflow:hidden; }
@@ -134,7 +127,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .param-group input[type=checkbox] { accent-color:var(--accent); }
 .params-empty { color:var(--text3); font-size:12px; font-style:italic; padding:4px 0; }
 
-/* ── RIGHT PANEL ── */
 #right-panel { display:flex; flex-direction:column; flex:1; overflow:hidden; }
 #editor-tabs { display:flex; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
 .tab-btn { padding:10px 16px; font-size:12px; color:var(--text3); cursor:pointer; border-bottom:2px solid transparent; transition:color 0.12s; background:none; border:none; }
@@ -171,7 +163,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .setting-row select, .setting-row input[type=number] { background:var(--surface2); border:1px solid var(--border2); color:var(--text); padding:4px 8px; border-radius:var(--radius); font-size:12px; }
 .setting-row input[type=color] { height:28px; width:48px; border:1px solid var(--border2); border-radius:4px; cursor:pointer; background:transparent; }
 
-/* ── FOOTER & MODALS ── */
 #editor-footer { border-top:1px solid var(--border); padding:10px 14px; display:flex; align-items:flex-start; gap:8px; flex-shrink:0; background:var(--surface); }
 #run-btn { background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:8px 16px; font-size:12px; font-weight:600; cursor:pointer; }
 #run-btn:hover { background:var(--accent2); }
@@ -233,7 +224,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
   <button onclick="forkSharedSim()">🍴 Fork & Edit</button>
 </div>
 
-<!-- HOME SCREEN -->
 <div id="home-screen">
   <div class="home-hero">
     <canvas id="hero-canvas" width="520" height="130"></canvas>
@@ -254,7 +244,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
   </div>
 </div>
 
-<!-- GALLERY SCREEN -->
 <div id="gallery-screen">
   <div class="gallery-header">
     <div class="gallery-title">🌐 Community Gallery</div>
@@ -267,7 +256,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
   <div class="gallery-grid" id="gallery-grid"></div>
 </div>
 
-<!-- EDITOR SCREEN -->
 <div id="editor-screen">
   <div id="main">
     <div id="left-panel">
@@ -334,7 +322,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
   </div>
 </div>
 
-<!-- SAVE MODAL -->
 <div id="save-modal">
   <div class="modal-box">
     <div class="modal-title">Save Simulation</div>
@@ -353,9 +340,6 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 <div id="share-toast">🔗 Share link copied to clipboard!</div>
 
 <script>
-// ═══════════════════════════════════════════
-// ⚠️ REPLACE THESE WITH YOUR SUPABASE CREDENTIALS
-// ═══════════════════════════════════════════
 
 const SUPABASE_URL = 'https://lvyuubnvnkotruzoikjx.supabase.co/auth/v1/callback';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2eXV1Ym52bmtvdHJ1em9pa2p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODcyODYsImV4cCI6MjA5Njg2MzI4Nn0.zHph2tnxfZ8bkQgpHGxH9cot5cNWPIAigFdTwBl3tvE';
@@ -376,8 +360,6 @@ const CATEGORIES = {
   cs: { name: 'Algorithms', icon: '💻', color: '#74c0fc' }
 };
 
-// [PRESETS DATA OMITTED FOR BREVITY - USING THE EXACT SAME 10 PRESETS FROM PREVIOUS PROMPT]
-// To save space, I'm keeping the logic intact. In production, paste the full PRESETS object here.
 const PRESETS = {
   virus: { name:'Virus Spread (SIR)', icon:'🦠', desc:'Infectious disease simulation.', category:'biology', tag:'preset', details: { concepts:['SIR model'], objectives:['Observe infection rates'], curriculum:'High School Biology', tips:['<strong>Try this:</strong> Set infectionRate very low.'] }, code:`function defineParameters() { return [{ name: "population", type: "slider", min: 50, max: 500, default: 200, step: 10 }, { name: "infectionRate", type: "slider", min: 0.01, max: 0.5, default: 0.15, step: 0.01 }, { name: "recoveryRate", type: "slider", min: 0.001, max: 0.05, default: 0.01, step: 0.001 }, { name: "moveSpeed", type: "slider", min: 0.5, max: 4, default: 1.5, step: 0.1 }, { name: "initialInfected", type: "number", min: 1, max: 20, default: 3 }]; } function init(p) { const out = []; for (let i = 0; i < p.population; i++) { out.push({ x: Math.random()*780+10, y: Math.random()*530+10, vx: (Math.random()-0.5)*p.moveSpeed*2, vy: (Math.random()-0.5)*p.moveSpeed*2, state: i < p.initialInfected ? 'I' : 'S', radius: 5, shape: 'circle' }); } return out; } function update(entities, p) { return entities.map((e, i) => { const ne = {...e}; ne.x += ne.vx; ne.y += ne.vy; if (ne.x < 5 || ne.x > 795) ne.vx *= -1; if (ne.y < 5 || ne.y > 545) ne.vy *= -1; ne.x = Math.max(5, Math.min(795, ne.x)); ne.y = Math.max(5, Math.min(545, ne.y)); if (ne.state === 'S') { for (let j = 0; j < entities.length; j++) { if (entities[j].state === 'I') { const dx = ne.x - entities[j].x, dy = ne.y - entities[j].y; if (Math.sqrt(dx*dx+dy*dy) < 14 && Math.random() < p.infectionRate) { ne.state = 'I'; break; } } } } else if (ne.state === 'I') { if (Math.random() < p.recoveryRate) ne.state = 'R'; } ne.color = ne.state==='S' ? '#4a9eff' : ne.state==='I' ? '#ff4a4a' : '#3ecf8e'; return ne; }); }` },
   boids: { name:'Boids Flocking', icon:'🐦', desc:'Emergent flocking behaviour.', category:'cs', tag:'preset', details: { concepts:['Swarm intelligence'], objectives:['Observe local rules'], curriculum:'Computer Science', tips:['<strong>Try this:</strong> Set separation very high.'] }, code:`function defineParameters() { return [{ name: "count", type: "slider", min: 20, max: 300, default: 120, step: 10 }, { name: "speed", type: "slider", min: 0.5, max: 5, default: 2, step: 0.1 }, { name: "separation", type: "slider", min: 0.1, max: 3, default: 1.2, step: 0.1 }, { name: "alignment", type: "slider", min: 0, max: 2, default: 0.8, step: 0.05 }, { name: "cohesion", type: "slider", min: 0, max: 2, default: 0.5, step: 0.05 }, { name: "visionRadius", type: "slider", min: 20, max: 100, default: 50, step: 5 }]; } function init(p) { const out = []; for (let i = 0; i < p.count; i++) { const a = Math.random()*Math.PI*2; out.push({ x:Math.random()*780+10, y:Math.random()*530+10, vx:Math.cos(a)*p.speed, vy:Math.sin(a)*p.speed, shape:'triangle', radius:6, color:'#7c6af7' }); } return out; } function update(entities, p) { return entities.map((e, i) => { const nb = entities.filter((o,j) => { if (j===i) return false; const dx=o.x-e.x, dy=o.y-e.y; return Math.sqrt(dx*dx+dy*dy) < p.visionRadius; }); let ax=0, ay=0; nb.forEach(o => { const dx=e.x-o.x, dy=e.y-o.y, d=Math.sqrt(dx*dx+dy*dy)||1; if (d<20) { ax+=(dx/d)*(20-d)*p.separation*0.1; ay+=(dy/d)*(20-d)*p.separation*0.1; } }); if (nb.length) { const avx=nb.reduce((s,o)=>s+o.vx,0)/nb.length; const avy=nb.reduce((s,o)=>s+o.vy,0)/nb.length; ax+=(avx-e.vx)*p.alignment*0.05; ay+=(avy-e.vy)*p.alignment*0.05; const cx=nb.reduce((s,o)=>s+o.x,0)/nb.length; const cy=nb.reduce((s,o)=>s+o.y,0)/nb.length; ax+=(cx-e.x)*p.cohesion*0.001; ay+=(cy-e.y)*p.cohesion*0.001; } let nvx=e.vx+ax, nvy=e.vy+ay; const spd=Math.sqrt(nvx*nvx+nvy*nvy)||1; nvx=(nvx/spd)*p.speed; nvy=(nvy/spd)*p.speed; let nx=e.x+nvx, ny=e.y+nvy; if (nx<0) nx+=800; if (nx>800) nx-=800; if (ny<0) ny+=550; if (ny>550) ny-=550; return {...e, x:nx, y:ny, vx:nvx, vy:nvy, angle:Math.atan2(nvy,nvx)}; }); }` },
@@ -395,12 +377,10 @@ const BLANK_CODE = `function defineParameters() { return [{ name: "count", type:
 
 function getLibrary() { try { return JSON.parse(localStorage.getItem('simforge_library')||'{}'); } catch { return {}; } }
 function saveLibrary(lib) { try { localStorage.setItem('simforge_library', JSON.stringify(lib)); } catch {} }
-
 function getAllSimKeys() { return [...Object.keys(PRESETS), ...Object.keys(getLibrary())]; }
 function getSimCategory(key) { return PRESETS[key] ? (PRESETS[key].category || 'all') : ((getLibrary()[key] || {}).category || 'custom'); }
 function getSimsInCategory(cat) { return cat === 'all' ? getAllSimKeys() : getAllSimKeys().filter(k => getSimCategory(k) === cat); }
 
-// AUTH
 async function initAuth() {
   const { data: { session } } = await supabase.auth.getSession();
   currentUser = session?.user || null;
@@ -425,7 +405,6 @@ document.addEventListener('click', (e) => { const d = document.getElementById('u
 async function loginWithGitHub() { await supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin } }); }
 async function logout() { await supabase.auth.signOut(); window.location.href = '/'; }
 
-// NAVIGATION
 function goHome() {
   stopLoop(); isPlaying=false; playBtn.innerHTML='▶'; playBtn.classList.remove('playing');
   document.getElementById('home-screen').style.display='';
@@ -448,7 +427,7 @@ function showGallery() {
   document.getElementById('sim-name-display').textContent = 'Gallery';
   loadGallery();
 }
-function showMySimulations() { /* Placeholder for future user dashboard */ alert('My Simulations dashboard coming soon!'); }
+function showMySimulations() { alert('My Simulations dashboard coming soon!'); }
 
 function openEditor(code, name, category, details, presetKey) {
   document.getElementById('home-screen').style.display='none';
@@ -472,7 +451,6 @@ function loadCustom(id) { const lib = getLibrary(); const sim = lib[id]; if (!si
 function deleteCustom(id, e) { e.stopPropagation(); if (!confirm('Delete?')) return; const lib = getLibrary(); delete lib[id]; saveLibrary(lib); renderLibGrid(); }
 function forkSharedSim() { isSharedSim = false; currentSimId = null; currentPresetKey = null; document.getElementById('shared-banner').classList.remove('visible'); history.replaceState(null, '', window.location.pathname); showOk('Forked! You can now edit and save this simulation.'); }
 
-// CATEGORIES & LIBRARY
 function renderCategoryBar() {
   const bar = document.getElementById('category-bar'); bar.innerHTML = '';
   const counts = { all: 0 }; Object.keys(CATEGORIES).forEach(k => { if (k !== 'all') counts[k] = 0; });
@@ -511,7 +489,6 @@ function renderLibGrid() {
   newCard.onclick = newSim; grid.appendChild(newCard);
 }
 
-// GALLERY
 async function loadGallery() {
   const sort = document.getElementById('gallery-sort').value;
   let query = supabase.from('simulations').select(`*, profiles:user_id (username, avatar_url)`).eq('is_public', true);
@@ -531,7 +508,6 @@ async function loadGallery() {
   });
 }
 
-// SAVE
 async function saveSimulation() {
   if (!currentUser) { showError('Please sign in to save simulations.'); return; }
   const name = document.getElementById('modal-name').value.trim() || 'Untitled';
@@ -565,11 +541,9 @@ function openSaveModal() {
 }
 function closeSaveModal() { document.getElementById('save-modal').classList.remove('open'); }
 
-// LOAD SHARED
 async function loadSharedSimBySlug(slug) {
   const { data: sim, error } = await supabase.from('simulations').select(`*, profiles:user_id (username, avatar_url)`).eq('slug', slug).single();
   if (error || !sim) { showError('Simulation not found'); goHome(); return; }
-  // Increment view (best effort, ignore errors if RPC not set up yet)
   supabase.rpc('increment_views', { sim_id: sim.id }).catch(() => {});
   isSharedSim = true; currentSimSlug = sim.slug; currentSimId = sim.id;
   document.getElementById('shared-banner').classList.add('visible');
@@ -578,7 +552,6 @@ async function loadSharedSimBySlug(slug) {
   history.replaceState(null, '', '/s/' + sim.slug);
 }
 
-// SHARE
 async function shareSimulation() {
   if (!currentSimSlug && !currentPresetKey) { showError('Please save the simulation first to get a share link.'); return; }
   const url = currentPresetKey ? window.location.origin + window.location.pathname + '#preset=' + currentPresetKey : window.location.origin + '/s/' + currentSimSlug;
@@ -586,7 +559,6 @@ async function shareSimulation() {
   const toast = document.getElementById('share-toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// ENGINE
 let entities=[], paramDefs=[], paramValues={}, compiledUpdate=null, compiledInit=null;
 let rafId=null, isPlaying=false, frame=0, lastTime=0, fpsFrames=0, fpsTime=0;
 let canvasW=800, canvasH=550, targetFps=60, trailEnabled=true, canvasBg='#090a0d';
@@ -619,7 +591,7 @@ function applySettings() {
 function setStatus(s) { statusBadge.className='status-'+s; statusBadge.textContent={idle:'idle',run:'running',pause:'paused',error:'error'}[s]||s; }
 function showError(msg) { errorConsole.textContent='⚠ '+msg; errorConsole.classList.add('visible'); okConsole.classList.remove('visible'); setStatus('error'); }
 function showOk(msg) { okConsole.textContent='✓ '+msg; okConsole.classList.add('visible'); errorConsole.classList.remove('visible'); setTimeout(()=>okConsole.classList.remove('visible'),2500); }
-function clearConsoles() { errorConsole.classList.remove('visible'); okConsole.classList.remove('status-error'); }
+function clearConsoles() { errorConsole.classList.remove('visible'); okConsole.classList.remove('visible'); }
 
 function compileAndRun() {
   clearConsoles();
@@ -702,7 +674,6 @@ codeEditor.addEventListener('keydown', e => {
   if ((e.ctrlKey||e.metaKey)&&e.key==='Enter') { e.preventDefault(); compileAndRun(); }
 });
 
-// NAVIGATION
 function updateNavLabel() {
   const label = document.getElementById('sim-nav-label');
   const key = currentPresetKey || currentSimId;
@@ -722,7 +693,6 @@ function navigateSim(direction) {
 }
 function browseCurrentCategory() { currentCategory = currentSimCategory || 'all'; goHome(); }
 
-// DETAILS
 function renderDetailsPanel() {
   const panel = document.getElementById('details-panel');
   const key = currentPresetKey; const preset = key ? PRESETS[key] : null;
@@ -744,7 +714,6 @@ function renderDetailsPanel() {
   panel.innerHTML = html;
 }
 
-// ROUTING
 function handleRouting() {
   const path = window.location.pathname;
   const simMatch = path.match(/^\/s\/([a-z0-9]+)$/);
@@ -754,13 +723,11 @@ function handleRouting() {
   goHome();
 }
 
-// INIT
 initAuth();
 handleRouting();
 renderCategoryBar();
 renderLibGrid();
 
-// HERO ANIMATION
 (function heroAnim() {
   const hc = document.getElementById('hero-canvas'); const hctx = hc.getContext('2d'); const W=520, H=130;
   const particles = []; const COLORS = ['#7c6af7','#4a9eff','#3ecf8e','#ff6b6b','#ffd93d','#f5a623'];
