@@ -571,13 +571,39 @@ function decodeShare(s){
   try{return decodeURIComponent(escape(atob(s)));}catch{return null;}
 }
 function getShareUrl(type,id,code,slug){
-  if(type==='slug'&&slug) return location.origin+'/s/'+slug;
+  if(type==='slug'&&slug) return location.origin+'/s/'+encodeURIComponent(slug);
   const base=location.origin;
   if(type==='preset') return base+'#sim/'+id;
   if(type==='custom_saved') return base+'#custom/'+id;
   const enc=encodeShare(code);
   if(enc.length<4000) return base+'#share/'+enc;
   return null;
+}
+function resolveShareSlug(sim){
+  return currentSimSlug||sim?.slug||null;
+}
+function getSimShareUrl(sim,catKey,simKey){
+  const slug=resolveShareSlug(sim);
+  if(slug) return getShareUrl('slug',null,null,slug);
+  const isPreset=!sim?.isCustom&&catKey!=='custom';
+  if(isPreset) return getShareUrl('preset',simKey,sim.code);
+  if(sim?.cloudId) return null;
+  if(simKey&&!String(simKey).startsWith('shared_')) return getShareUrl('custom_saved',simKey,sim.code);
+  return getShareUrl('share',null,sim?.code||codeEditor.value);
+}
+function copyShareLink(){
+  const sim=currentSimMeta?.sim;
+  const url=getSimShareUrl(sim,currentSimMeta?.catKey,currentSimMeta?.simKey);
+  if(!url){
+    if(!currentUser) showToast('Sign in and save to cloud to get a shareable link');
+    else showToast('Save to cloud first to get a shareable link');
+    return;
+  }
+  if(url.includes('#custom/')||url.includes('#share/')){
+    showToast('Sign in and save to cloud for a short shareable link');
+    return;
+  }
+  copyToClipboard(url);
 }
 function copyToClipboard(text){
   navigator.clipboard.writeText(text).then(()=>showToast('Link copied to clipboard!')).catch(()=>{
@@ -589,13 +615,13 @@ function copyToClipboard(text){
 // ROUTING — parse URL on load
 // ═══════════════════════════════════════════════════════
 async function handleRoute(){
-  await loadPresets();
   const path=location.pathname;
-  const slugMatch=path.match(/^\/s\/([a-z0-9]+)$/);
+  const slugMatch=path.match(/^\/s\/([a-z0-9-]+)$/i);
   if(slugMatch){
-    await loadSimulationBySlug(slugMatch[1]);
+    await loadSimulationBySlug(decodeURIComponent(slugMatch[1]));
     return;
   }
+  await loadPresets();
   
   const hash=location.hash.slice(1);
   if(!hash){goHome();return;}
@@ -657,9 +683,27 @@ function openEditorFromCustom(id,pushHistory=true){
   if(!sim)return;
   if(sim.slug)currentSimSlug=sim.slug;
   if(sim.cloudId)currentSimId=sim.cloudId;
+  if(sim.cloudId)currentAuthorId=currentUser?.id||null;
   simIndex=buildIndex();
   currentIndexPos=simIndex.findIndex(s=>s.simKey===id&&s.isCustom);
   openEditor(sim,'custom',id,pushHistory);
+  if(pushHistory&&sim.slug)history.replaceState(null,'','/s/'+sim.slug);
+  if(!sim.slug&&sim.cloudId&&currentUser)fetchSlugForSim(id,sim.cloudId);
+}
+
+async function fetchSlugForSim(localId,cloudId){
+  try{
+    const{data}=await supabaseClient.from('simulations').select('slug').eq('id',cloudId).single();
+    if(!data?.slug)return;
+    currentSimSlug=data.slug;
+    const lib=getLib();
+    if(lib[localId]){lib[localId].slug=data.slug;saveLib(lib);}
+    history.replaceState(null,'','/s/'+data.slug);
+    if(currentSimMeta?.simKey===localId){
+      currentSimMeta.sim={...currentSimMeta.sim,slug:data.slug};
+      renderAboutPanel(currentSimMeta.sim,'custom',localId);
+    }
+  }catch{}
 }
 
 function openEditor(sim,catKey,simKey,pushHistory=true){
@@ -802,7 +846,7 @@ function renderHomeSync(){
       card.onclick=()=>ic?openEditorFromCustom(sk):openSim(key,sk);
       if(ic){
         card.querySelector('.sim-card-del').onclick=e=>{e.stopPropagation();if(confirm('Delete?')){const l=getLib();delete l[sk];saveLib(l);renderHome();}};
-        card.querySelector('.sim-card-shared').onclick=e=>{e.stopPropagation();const url=s.slug?getShareUrl('slug',null,null,s.slug):getShareUrl('custom_saved',sk,s.code);if(url)copyToClipboard(url);else showToast('Save to cloud first for a shareable link');};
+        card.querySelector('.sim-card-shared').onclick=e=>{e.stopPropagation();const url=s.slug?getShareUrl('slug',null,null,s.slug):s.cloudId?null:getShareUrl('custom_saved',sk,s.code);if(url)copyToClipboard(url);else showToast('Open and save to cloud for a shareable link');};
       }
       grid.appendChild(card);
     });
@@ -875,14 +919,9 @@ function renderAboutPanel(sim,catKey,simKey){
   const cat=getCategory(catKey);
   const color=cat.color||CAT_COLORS[catKey]||'#7c6af7';
   const isPreset=!sim.isCustom&&catKey!=='custom';
-  let shareUrl;
-  if(currentSimSlug) shareUrl=getShareUrl('slug',null,null,currentSimSlug);
-  else if(isPreset) shareUrl=getShareUrl('preset',simKey,sim.code);
-  else if(simKey&&!String(simKey).startsWith('shared_')) shareUrl=getShareUrl('custom_saved',simKey,sim.code);
-  else shareUrl=getShareUrl('share',null,sim.code||codeEditor.value);
-
-  const shareDisplay=shareUrl?(shareUrl.length>60?shareUrl.substring(0,60)+'…':shareUrl):'Save to cloud first to get a shareable link';
-  const safeShareUrl=(shareUrl||'').replace(/'/g,"\\'");
+  const shareUrl=getSimShareUrl(sim,catKey,simKey);
+  const isCloudLink=shareUrl&&shareUrl.includes('/s/');
+  const shareDisplay=shareUrl?(shareUrl.length>60?shareUrl.substring(0,60)+'…':shareUrl):(currentUser?'Save to cloud to get a shareable link':'Sign in & save to cloud for a shareable link');
 
   const concepts=(sim.concepts||[]).map(c=>`<span class="concept-chip">${c}</span>`).join('');
   const objectives=(sim.objectives||[]).map(o=>`<li style="font-size:11.5px;color:var(--text2);line-height:1.6;margin-bottom:3px">${o}</li>`).join('');
@@ -899,11 +938,13 @@ function renderAboutPanel(sim,catKey,simKey){
     ${params?`<div class="about-section"><h4>Parameter Guide</h4>${params}</div>`:''}
     <div class="about-share">
       <h4>Share this simulation</h4>
-      <div class="share-url" onclick="copyToClipboard('${safeShareUrl}')" title="Click to copy">${shareDisplay}</div>
+      <div class="share-url" onclick="copyShareLink()" title="Click to copy">${shareDisplay}</div>
       <div class="share-row">
-        ${shareUrl?`<button class="share-btn" onclick="copyToClipboard('${safeShareUrl}')">📋 Copy link</button>`:''}
+        ${isCloudLink?`<button class="share-btn" onclick="copyShareLink()">📋 Copy link</button>`:''}
+        ${!isCloudLink&&shareUrl?`<button class="share-btn" onclick="copyShareLink()">📋 Copy link (local only)</button>`:''}
         ${isViewOnly?`<button class="share-btn" onclick="forkSimulation()">⑂ Fork to my library</button>`:'<button class="share-btn" onclick="shareCode()">📤 Share code</button>'}
       </div>
+      ${!isCloudLink&&!isPreset?'<p style="font-size:10px;color:var(--text3);margin-top:8px">Cloud links work for anyone — sign in and save to generate one.</p>':''}
     </div>`;
 }
 
@@ -950,7 +991,7 @@ async function saveSimulation(){
   
   try{
     if(currentSimId){
-      const{error}=await supabaseClient.from('simulations').update({name,description:desc,icon,code:codeEditor.value,updated_at:new Date().toISOString()}).eq('id',currentSimId);
+      const{error}=await supabaseClient.from('simulations').update({name,description:desc,icon,code:codeEditor.value,is_public:true,updated_at:new Date().toISOString()}).eq('id',currentSimId);
       if(error)throw error;
       showToast('Updated: '+name);
     }else{
@@ -973,7 +1014,9 @@ async function saveSimulation(){
     if(currentSimMeta)currentSimMeta.simKey=id;
     document.getElementById('bc-name').textContent=name;
     closeSaveModal();
-    renderAboutPanel({...currentSimMeta?.sim,name,desc,icon,objectives,isCustom:true},'custom',id);
+    if(currentSimSlug)history.replaceState(null,'','/s/'+currentSimSlug);
+    renderAboutPanel({...currentSimMeta?.sim,name,desc,icon,objectives,isCustom:true,slug:currentSimSlug,cloudId:currentSimId},'custom',id);
+    if(currentSimSlug)showToast('Saved — share link: '+location.origin+'/s/'+currentSimSlug);
   }catch(e){
     showToast('Save failed: '+e.message);
   }
@@ -1362,10 +1405,13 @@ async function showMySimulations() {
 
 async function loadSimulationBySlug(slug) {
   const { data: sim, error } = await supabaseClient.from('simulations').select('*').eq('slug', slug).single();
-  if (error || !sim) { 
-    showToast('Simulation not found'); 
+  if (error || !sim) {
+    const msg=error?.code==='PGRST116'
+      ?'Simulation not found or not shared publicly'
+      :('Could not load simulation'+(error?.message?': '+error.message:''));
+    showToast(msg);
     goHome();
-    return; 
+    return;
   }
   
   supabaseClient.rpc('increment_views', { sim_id: sim.id }).catch(() => {});
@@ -1388,17 +1434,20 @@ async function loadSimulationBySlug(slug) {
     name: sim.name || 'Untitled',
     icon: sim.icon || '🔬',
     desc: sim.description || 'Shared simulation',
-    concepts: [],
-    objectives: [],
-    params: [],
+    concepts: sim.concepts || [],
+    objectives: sim.objectives || [],
+    params: sim.param_docs || [],
     code: sim.code || '',
     isCustom: true,
+    slug: sim.slug,
+    cloudId: sim.id,
     views: sim.views,
     likes: sim.likes
   };
   
   openEditor(simData, 'custom', isOwner ? sim.id : 'shared_'+sim.slug, false);
   setEditorMode(isViewOnly);
+  history.replaceState(null,'','/s/'+sim.slug);
   if (isViewOnly) {
     switchTab('about');
     setTimeout(() => compileAndRun(), 100);
@@ -1422,8 +1471,8 @@ async function loadSimulationBySlug(slug) {
 async function initApp(){
   initCodeEditor();
   await initAuth();
-  await loadPresets();
-  renderHome();
+  const isSlugRoute=/^\/s\/[a-z0-9-]+$/i.test(location.pathname);
+  if(!isSlugRoute) renderHome();
   await handleRoute();
 }
 initApp();
