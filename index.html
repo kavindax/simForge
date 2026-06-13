@@ -287,6 +287,51 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+
+/* Toast Notification */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(22, 24, 31, 0.95);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 12px 20px;
+  border-radius: var(--rl);
+  font-size: 12.5px;
+  z-index: 10000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 90vw;
+  width: max-content;
+}
+#toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.toast-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r);
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+  margin-left: 8px;
+}
+.toast-btn:hover {
+  background: var(--accent2);
+}
 </style>
 </head>
 <body>
@@ -459,7 +504,10 @@ const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-30);
     </div>
     <div class="modal-row"><label>Description</label><textarea id="modal-desc" placeholder="What does this simulate?"></textarea></div>
     <div class="modal-row"><label>Learning objectives (one per line)</label><textarea id="modal-obj" placeholder="Students will understand…" style="min-height:48px"></textarea></div>
-    <div class="modal-row"><label>Icon (emoji)</label><input id="modal-icon" placeholder="🔬" maxlength="4" style="width:70px"></div>
+    <div id="modal-icon-row" class="modal-row"><label>Icon (emoji)</label><input id="modal-icon" placeholder="🔬" maxlength="4" style="width:70px"></div>
+    <div id="modal-auth-warning" style="font-size:11px;color:var(--amber);margin:4px 0;display:none;line-height:1.4;">
+      ⚠️ You must be signed in when saving for a cloud share link. Local-only saves cannot produce /s/ links. <a href="#" onclick="loginWithGitHub(); return false;" style="color:var(--accent);text-decoration:underline;font-weight:600;margin-left:4px;">Sign in</a>
+    </div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeSaveModal()">Cancel</button>
       <button class="modal-save" onclick="saveSimulation()">Save to Library</button>
@@ -966,6 +1014,15 @@ function openSaveModal(){
   document.getElementById('modal-desc').value=currentSimMeta?.sim?.desc||'';
   document.getElementById('modal-obj').value=(currentSimMeta?.sim?.objectives||[]).join('\n');
   document.getElementById('modal-icon').value=currentSimMeta?.sim?.icon||'🔬';
+  
+  const authWarning = document.getElementById('modal-auth-warning');
+  if(!currentUser){
+    if(authWarning) authWarning.style.display = 'block';
+    showToast('<span>You must be signed in when saving for a cloud share link. Local-only saves cannot produce /s/ links.</span><button class="toast-btn" onclick="loginWithGitHub()">Sign in</button>', 6000);
+  } else {
+    if(authWarning) authWarning.style.display = 'none';
+  }
+  
   document.getElementById('save-modal').classList.add('open');
 }
 function closeSaveModal(){document.getElementById('save-modal').classList.remove('open');}
@@ -1199,9 +1256,14 @@ function doStep(){
 // TOAST
 // ═══════════════════════════════════════════════════════
 let toastTimer=null;
-function showToast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+function showToast(msg, duration = 3000){
+  const t=document.getElementById('toast');
+  t.innerHTML=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  if (duration !== null && duration > 0) {
+    toastTimer=setTimeout(()=>t.classList.remove('show'), duration);
+  }
 }
 
 // ═══════════════════════════════════════════════════════
