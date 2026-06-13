@@ -4,396 +4,372 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SimForge — Universal Simulation Sandbox</title>
+<meta name="description" content="Build, share and explore interactive simulations for science education.">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0e0f13; --surface: #16181f; --surface2: #1e2028; --surface3: #252730;
-  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
-  --text: #f0f0f2; --text2: #9a9ba8; --text3: #6b6c78;
-  --accent: #7c6af7; --accent2: #5d4ee8; --accent-dim: rgba(124,106,247,0.15);
-  --green: #3ecf8e; --green-dim: rgba(62,207,142,0.12);
-  --amber: #f5a623; --amber-dim: rgba(245,166,35,0.12);
-  --red: #f55b5b; --red-dim: rgba(245,91,91,0.12);
-  --blue: #4a9eff; --blue-dim: rgba(74,158,255,0.12);
-  --mono: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
-  --radius: 8px; --radius-lg: 12px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e0f13;--surface:#16181f;--surface2:#1e2028;--surface3:#252730;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --text:#f0f0f2;--text2:#9a9ba8;--text3:#6b6c78;
+  --accent:#7c6af7;--accent2:#5d4ee8;--accent-dim:rgba(124,106,247,0.15);
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,0.12);
+  --amber:#f5a623;--amber-dim:rgba(245,166,35,0.12);
+  --red:#f55b5b;--red-dim:rgba(245,91,91,0.12);
+  --mono:'JetBrains Mono','Fira Code',monospace;
+  --r:8px;--rl:12px;
 }
-body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif; font-size:13px; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 
 /* ── TOPBAR ── */
-#topbar { display:flex; align-items:center; gap:10px; padding:0 14px; height:48px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
-#logo { font-size:15px; font-weight:700; letter-spacing:-0.02em; display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
-#logo-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
-.spacer { flex:1; }
-#fps-badge { font-family:var(--mono); font-size:11px; color:var(--text3); background:var(--surface2); padding:3px 8px; border-radius:4px; border:1px solid var(--border); min-width:58px; text-align:center; }
-.topbar-btn { display:flex; align-items:center; gap:5px; padding:5px 11px; border:1px solid var(--border2); border-radius:var(--radius); background:var(--surface2); color:var(--text2); font-size:12px; cursor:pointer; white-space:nowrap; transition:all 0.12s; }
-.topbar-btn:hover { background:var(--surface3); color:var(--text); border-color:rgba(255,255,255,0.22); }
-.topbar-btn.accent { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+#topbar{display:flex;align-items:center;gap:8px;padding:0 12px;height:46px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;z-index:10;}
+#logo{font-size:15px;font-weight:700;letter-spacing:-0.02em;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;flex-shrink:0;}
+#logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);}
+#sim-breadcrumb{display:none;align-items:center;gap:6px;font-size:12px;color:var(--text3);}
+#sim-breadcrumb .cat{color:var(--text2);}
+#sim-breadcrumb .sep{opacity:0.4;}
+#sim-breadcrumb .name{color:var(--text);font-weight:500;}
+.spacer{flex:1;}
+.tbtn{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;transition:all 0.12s;flex-shrink:0;}
+.tbtn:hover{background:var(--surface3);color:var(--text);}
+.tbtn.accent{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.tbtn.green{background:var(--green-dim);border-color:rgba(62,207,142,0.4);color:var(--green);}
+#nav-arrows{display:none;align-items:center;gap:2px;}
+.nav-arr{width:28px;height:28px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface2);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.1s;}
+.nav-arr:hover{background:var(--surface3);color:var(--text);}
+#fps-badge{font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--surface2);padding:3px 8px;border-radius:4px;border:1px solid var(--border);min-width:54px;text-align:center;display:none;}
 
-/* ── HOME SCREEN ── */
-#home-screen { flex:1; overflow-y:auto; padding:32px 24px 40px; display:flex; flex-direction:column; gap:28px; }
-.home-hero { display:flex; flex-direction:column; align-items:center; gap:0; }
-#hero-canvas { border-radius:var(--radius-lg); border:1px solid var(--border); }
-.hero-title { font-size:28px; font-weight:700; letter-spacing:-0.03em; margin-top:20px; }
-.hero-title span { color:var(--accent); }
-.hero-sub { color:var(--text2); font-size:14px; margin-top:6px; text-align:center; max-width:480px; line-height:1.6; }
-.hero-actions { display:flex; gap:10px; margin-top:18px; }
-.btn-primary { background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:10px 22px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.12s; }
-.btn-primary:hover { background:var(--accent2); }
-.btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 18px; font-size:13px; cursor:pointer; transition:all 0.12s; }
-.btn-secondary:hover { background:var(--surface3); border-color:rgba(255,255,255,0.22); }
+/* ── HOME ── */
+#home{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.home-hero{background:linear-gradient(160deg,#0e0f13 0%,#13101f 100%);border-bottom:1px solid var(--border);padding:40px 32px 32px;display:flex;justify-content:center;align-items:center;}
+.home-hero-inner{display:flex;align-items:center;justify-content:center;gap:48px;width:100%;max-width:900px;}
+#hero-canvas{border-radius:var(--rl);border:1px solid var(--border);flex-shrink:0;}
+.hero-text{flex:1;min-width:0;max-width:420px;}
+.hero-title{font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1.2;}
+.hero-title span{color:var(--accent);}
+.hero-sub{color:var(--text2);font-size:13px;margin-top:8px;line-height:1.6;max-width:420px;}
+.hero-actions{display:flex;gap:8px;margin-top:18px;}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.12s;}
+.btn-primary:hover{background:var(--accent2);}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:9px 16px;font-size:13px;cursor:pointer;transition:all 0.12s;}
+.btn-secondary:hover{background:var(--surface3);}
+.home-body{padding:24px 32px;flex:1;display:flex;flex-direction:column;align-items:stretch;}
+.home-body-inner{width:100%;max-width:1200px;margin:0 auto;}
+.home-search-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:20px;}
+#home-search{background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:var(--r);padding:8px 12px;font-size:13px;outline:none;width:240px;flex-shrink:0;}
+#home-search:focus{border-color:var(--accent);}
+.cat-filter{display:flex;gap:6px;flex-wrap:wrap;flex:1;}
+.cat-chip{padding:4px 12px;border:1px solid var(--border2);border-radius:20px;font-size:11px;cursor:pointer;color:var(--text2);background:var(--surface);transition:all 0.1s;white-space:nowrap;}
+.cat-chip:hover{color:var(--text);border-color:var(--border2);}
+.cat-chip.active{color:#fff;border-color:transparent;}
+.cat-section{margin-bottom:28px;}
+.cat-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.cat-icon{font-size:16px;}
+.cat-name{font-size:13px;font-weight:600;color:var(--text);}
+.cat-count{font-size:11px;color:var(--text3);}
+.sim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
+.sim-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;gap:5px;position:relative;}
+.sim-card:hover{border-color:var(--accent);background:var(--surface2);transform:translateY(-1px);}
+.sim-card-icon{font-size:20px;margin-bottom:2px;}
+.sim-card-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;}
+.sim-card-desc{font-size:11px;color:var(--text3);line-height:1.45;}
+.sim-card-tag{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;width:fit-content;margin-top:3px;}
+.tag-preset{background:var(--accent-dim);color:var(--accent);}
+.tag-custom{background:var(--green-dim);color:var(--green);}
+.sim-card-del{position:absolute;top:7px;right:7px;width:20px;height:20px;border-radius:4px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:13px;display:none;align-items:center;justify-content:center;}
+.sim-card:hover .sim-card-del{display:flex;}
+.sim-card-del:hover{background:var(--red-dim);color:var(--red);}
+.sim-card-shared{position:absolute;top:7px;right:28px;width:20px;height:20px;border-radius:4px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:13px;display:none;align-items:center;justify-content:center;}
+.sim-card:hover .sim-card-shared{display:flex;}
+.sim-card-shared:hover{color:var(--accent);}
+.new-card{border-style:dashed;align-items:center;justify-content:center;min-height:100px;gap:4px;}
+.new-card-icon{font-size:20px;opacity:0.25;}
+.new-card-label{color:var(--text3);font-size:11px;}
 
-.section-title { font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text3); margin-bottom:10px; }
-
-
-#auth-section { display:flex; align-items:center; gap:10px; }
-.user-menu { position:relative; }
-.user-avatar { width:32px; height:32px; border-radius:50%; cursor:pointer; border:2px solid var(--border2); transition:border-color 0.12s; object-fit: cover; }
-.user-avatar:hover { border-color:var(--accent); }
-.user-dropdown { position:absolute; top:40px; right:0; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); min-width:180px; display:none; z-index:50; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
-.user-dropdown.open { display:block; }
-.dropdown-item { padding:10px 14px; font-size:12px; color:var(--text2); cursor:pointer; transition:background 0.1s; display:flex; align-items:center; gap:8px; }
-.dropdown-item:hover { background:var(--surface2); color:var(--text); }
-.dropdown-item:first-child { border-radius:var(--radius) var(--radius) 0 0; }
-.dropdown-item:last-child { border-radius:0 0 var(--radius) var(--radius); }
-.dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
-
-
-#gallery-screen { display:none; flex:1; overflow-y:auto; padding:32px 24px 40px; }
-.gallery-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
-.gallery-title { font-size:24px; font-weight:700; }
-.gallery-sort { background:var(--surface2); border:1px solid var(--border2); color:var(--text); padding:6px 12px; border-radius:var(--radius); font-size:12px; cursor:pointer; }
-.gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
-.gallery-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:8px; }
-.gallery-card:hover { border-color:var(--accent); background:var(--surface2); transform:translateY(-2px); }
-.gallery-card-header { display:flex; align-items:center; gap:10px; }
-.gallery-card-icon { font-size:28px; }
-.gallery-card-info { flex:1; }
-.gallery-card-name { font-size:14px; font-weight:600; color:var(--text); margin-bottom:2px; }
-.gallery-card-author { font-size:11px; color:var(--text3); }
-.gallery-card-desc { font-size:12px; color:var(--text2); line-height:1.5; }
-.gallery-card-footer { display:flex; align-items:center; gap:12px; margin-top:auto; padding-top:10px; border-top:1px solid var(--border); }
-.gallery-stat { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text3); }
-.gallery-card-cat { font-size:10px; padding:2px 8px; border-radius:10px; background:var(--accent-dim); color:var(--accent); font-weight:600; margin-left:auto; }
-
-/* ── CATEGORY FILTER ── */
-.category-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:4px; }
-.cat-pill { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:20px; border:1px solid var(--border2); background:var(--surface); color:var(--text2); font-size:11.5px; font-weight:500; cursor:pointer; transition:all 0.12s; white-space:nowrap; }
-.cat-pill:hover { background:var(--surface2); color:var(--text); border-color:rgba(255,255,255,0.22); }
-.cat-pill.active { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
-.cat-pill .cat-icon { font-size:13px; }
-.cat-pill .cat-count { font-family:var(--mono); font-size:10px; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:8px; }
-
-/* Guide cards */
-.guide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-.guide-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px; display:flex; flex-direction:column; gap:6px; }
-.guide-step { font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); }
-.guide-title { font-size:13px; font-weight:600; color:var(--text); }
-.guide-desc { font-size:11.5px; color:var(--text2); line-height:1.55; }
-.guide-code { font-family:var(--mono); font-size:10.5px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 10px; color:#c8d0e0; line-height:1.6; margin-top:4px; white-space:pre; overflow-x:auto; }
-
-/* Sim library */
-.lib-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
-.sim-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:5px; position:relative; }
-.sim-card:hover { border-color:var(--accent); background:var(--surface2); }
-.sim-card-icon { font-size:22px; margin-bottom:2px; }
-.sim-card-name { font-size:13px; font-weight:600; color:var(--text); }
-.sim-card-desc { font-size:11px; color:var(--text3); line-height:1.45; }
-.sim-card-tag { font-size:10px; font-weight:600; padding:2px 6px; border-radius:4px; width:fit-content; margin-top:2px; }
-.tag-preset { background:var(--accent-dim); color:var(--accent); }
-.tag-custom { background:var(--green-dim); color:var(--green); }
-.sim-card-cat { position:absolute; top:8px; right:8px; font-size:10px; padding:2px 6px; border-radius:4px; background:var(--surface3); color:var(--text3); font-weight:500; }
-.sim-card-del { position:absolute; top:8px; right:8px; width:22px; height:22px; border-radius:4px; background:transparent; border:none; color:var(--text3); cursor:pointer; font-size:14px; display:none; align-items:center; justify-content:center; transition:all 0.1s; }
-.sim-card:hover .sim-card-del { display:flex; }
-.sim-card:hover .sim-card-cat { display:none; }
-.sim-card-del:hover { background:var(--red-dim); color:var(--red); }
-
-/* ── EDITOR SCREEN ── */
-#editor-screen { display:none; flex:1; flex-direction:column; overflow:hidden; }
-#main { display:flex; flex:1; overflow:hidden; }
+/* ── EDITOR ── */
+#editor{display:none;flex:1;flex-direction:column;overflow:hidden;}
+#main{display:flex;flex:1;overflow:hidden;}
 
 /* Left panel */
-#left-panel { display:flex; flex-direction:column; flex:0 0 60%; border-right:1px solid var(--border); overflow:hidden; }
-#canvas-toolbar { display:flex; align-items:center; gap:6px; padding:8px 12px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
-.ctrl-btn { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border:1px solid var(--border2); border-radius:var(--radius); background:var(--surface2); color:var(--text); cursor:pointer; font-size:16px; transition:background 0.12s,border-color 0.12s; flex-shrink:0; }
-.ctrl-btn:hover { background:var(--surface3); border-color:rgba(255,255,255,0.22); }
-.ctrl-btn.active { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
-.ctrl-btn.nav-btn { font-size:13px; width:auto; padding:0 10px; gap:4px; }
-#play-btn.playing { background:var(--green-dim); border-color:var(--green); color:var(--green); }
-#frame-counter { font-family:var(--mono); font-size:11px; color:var(--text3); margin-left:4px; }
-#sim-status { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:500; }
-.status-idle { background:var(--surface3); color:var(--text3); }
-.status-run  { background:var(--green-dim); color:var(--green); }
-.status-pause{ background:var(--amber-dim); color:var(--amber); }
-.status-error{ background:var(--red-dim); color:var(--red); }
-#sim-nav-label { font-size:11px; color:var(--text3); padding:0 6px; cursor:pointer; border-radius:4px; transition:all 0.1s; }
-#sim-nav-label:hover { color:var(--text); background:var(--surface3); }
-
-#canvas-wrap { flex:1; background:#090a0d; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
-#sim-canvas { display:block; image-rendering:pixelated; }
-#canvas-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none; }
-#overlay-icon { font-size:36px; margin-bottom:8px; opacity:0.25; }
-#overlay-msg { color:var(--text3); font-size:12px; }
-
-#params-bar { border-top:1px solid var(--border); background:var(--surface); padding:10px 14px; max-height:130px; overflow-y:auto; flex-shrink:0; }
-#params-inner { display:flex; flex-wrap:wrap; gap:10px 20px; align-items:flex-start; }
-.param-group { display:flex; align-items:center; gap:8px; min-width:180px; }
-.param-label { color:var(--text2); font-size:11px; min-width:90px; flex-shrink:0; }
-.param-group input[type=range] { width:100px; accent-color:var(--accent); }
-.param-value { font-family:var(--mono); font-size:11px; color:var(--accent); min-width:36px; text-align:right; }
-.param-group input[type=number] { width:70px; background:var(--surface2); border:1px solid var(--border2); color:var(--text); border-radius:4px; padding:3px 6px; font-size:12px; font-family:var(--mono); }
-.param-group input[type=number]:focus { outline:none; border-color:var(--accent); }
-.param-group input[type=checkbox] { accent-color:var(--accent); }
-.params-empty { color:var(--text3); font-size:12px; font-style:italic; padding:4px 0; }
+#left-panel{display:flex;flex-direction:column;flex:0 0 62%;border-right:1px solid var(--border);overflow:hidden;}
+#canvas-toolbar{display:flex;align-items:center;gap:5px;padding:7px 10px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.ctrl-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface2);color:var(--text);cursor:pointer;font-size:15px;transition:all 0.12s;flex-shrink:0;}
+.ctrl-btn:hover{background:var(--surface3);border-color:rgba(255,255,255,0.22);}
+#play-btn.playing{background:var(--green-dim);border-color:var(--green);color:var(--green);}
+#frame-counter{font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:2px;}
+#sim-status{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.status-idle{background:var(--surface3);color:var(--text3);}
+.status-run{background:var(--green-dim);color:var(--green);}
+.status-pause{background:var(--amber-dim);color:var(--amber);}
+.status-error{background:var(--red-dim);color:var(--red);}
+#canvas-wrap{flex:1;background:#090a0d;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+#sim-canvas{display:block;}
+#canvas-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+#overlay-icon{font-size:32px;margin-bottom:8px;opacity:0.2;}
+#overlay-msg{color:var(--text3);font-size:12px;}
+#params-bar{border-top:1px solid var(--border);background:var(--surface);padding:8px 12px;max-height:120px;overflow-y:auto;flex-shrink:0;}
+#params-inner{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:flex-start;}
+.param-group{display:flex;align-items:center;gap:7px;min-width:170px;}
+.param-label{color:var(--text2);font-size:11px;min-width:88px;flex-shrink:0;}
+.param-group input[type=range]{width:90px;accent-color:var(--accent);}
+.param-value{font-family:var(--mono);font-size:11px;color:var(--accent);min-width:34px;text-align:right;}
+.param-group input[type=number]{width:66px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:4px;padding:3px 6px;font-size:12px;font-family:var(--mono);}
+.param-group input[type=number]:focus{outline:none;border-color:var(--accent);}
+.param-group input[type=checkbox]{accent-color:var(--accent);}
+.params-empty{color:var(--text3);font-size:11px;font-style:italic;padding:3px 0;}
 
 /* Right panel */
-#right-panel { display:flex; flex-direction:column; flex:1; overflow:hidden; }
-#editor-tabs { display:flex; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
-.tab-btn { padding:10px 16px; font-size:12px; color:var(--text3); cursor:pointer; border-bottom:2px solid transparent; transition:color 0.12s; background:none; border-top:none; border-left:none; border-right:none; }
-.tab-btn:hover { color:var(--text); }
-.tab-btn.active { color:var(--text); border-bottom-color:var(--accent); }
-#editor-wrap { flex:1; position:relative; overflow:hidden; display:flex; flex-direction:column; }
-#code-editor { width:100%; flex:1; background:#0b0c10; color:#c8d0e0; border:none; resize:none; font-family:var(--mono); font-size:12.5px; line-height:1.65; padding:14px 16px; tab-size:2; outline:none; overflow:auto; }
+#right-panel{display:flex;flex-direction:column;flex:1;overflow:hidden;}
+#editor-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.tab-btn{padding:9px 13px;font-size:12px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:color 0.12s;background:none;border-top:none;border-left:none;border-right:none;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--text);border-bottom-color:var(--accent);}
+#editor-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+#code-editor{width:100%;flex:1;background:#0b0c10;color:#c8d0e0;border:none;resize:none;font-family:var(--mono);font-size:12px;line-height:1.65;padding:13px 14px;tab-size:2;outline:none;overflow:auto;}
 
-/* Guide tab */
-#guide-panel { display:none; flex:1; overflow-y:auto; padding:14px; background:#0b0c10; }
-.guide-section { margin-bottom:18px; }
-.guide-section h4 { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
-.guide-section p { font-size:12px; color:var(--text2); line-height:1.6; margin-bottom:6px; }
-.g-code { font-family:var(--mono); font-size:11px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:10px 12px; color:#c8d0e0; line-height:1.7; white-space:pre; overflow-x:auto; margin:6px 0; }
-.g-prop { display:flex; gap:8px; align-items:baseline; margin:3px 0; }
-.g-prop-name { font-family:var(--mono); font-size:11px; color:var(--amber); min-width:80px; flex-shrink:0; }
-.g-prop-desc { font-size:11px; color:var(--text2); }
+/* About panel */
+#about-panel{display:none;flex:1;overflow-y:auto;padding:16px;}
+.about-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:12px;}
+.about-title{font-size:16px;font-weight:700;margin-bottom:4px;}
+.about-cat{font-size:11px;color:var(--text3);margin-bottom:12px;}
+.about-desc{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:14px;}
+.about-section{margin-bottom:14px;}
+.about-section h4{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:7px;}
+.concept-chip{display:inline-block;padding:3px 9px;background:var(--accent-dim);border:1px solid rgba(124,106,247,0.25);border-radius:20px;font-size:11px;color:var(--accent);margin:2px 3px 2px 0;}
+.param-doc{display:flex;gap:8px;align-items:baseline;margin:4px 0;}
+.param-doc-name{font-family:var(--mono);font-size:11px;color:var(--amber);min-width:100px;flex-shrink:0;}
+.param-doc-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+.about-share{margin-top:14px;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);}
+.about-share h4{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.share-url{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--surface3);padding:6px 10px;border-radius:5px;word-break:break-all;margin-bottom:8px;cursor:pointer;border:1px solid var(--border);}
+.share-url:hover{border-color:var(--accent);}
+.share-row{display:flex;gap:6px;}
+.share-btn{flex:1;padding:6px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface3);color:var(--text2);font-size:11px;cursor:pointer;text-align:center;transition:all 0.12s;}
+.share-btn:hover{color:var(--text);border-color:var(--border2);}
 
-/* ── DETAILS TAB ── */
-#details-panel { display:none; flex:1; overflow-y:auto; padding:18px; background:#0b0c10; }
-.details-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--border); }
-.details-icon { font-size:36px; }
-.details-info { flex:1; }
-.details-name { font-size:16px; font-weight:700; color:var(--text); margin-bottom:3px; }
-.details-desc { font-size:12px; color:var(--text2); line-height:1.5; }
-.details-cat-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; margin-top:6px; }
-.details-section { margin-bottom:18px; }
-.details-section h4 { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
-.details-section h4 .sec-icon { font-size:13px; }
-.details-section ul { list-style:none; padding:0; }
-.details-section li { font-size:12px; color:var(--text2); line-height:1.6; padding:3px 0 3px 16px; position:relative; }
-.details-section li::before { content:'›'; position:absolute; left:2px; color:var(--accent); font-weight:700; }
-.details-tip { font-size:12px; color:var(--text2); line-height:1.6; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; margin-bottom:6px; }
-.details-tip strong { color:var(--amber); }
-.details-related { display:flex; flex-wrap:wrap; gap:6px; }
-.details-related-card { display:flex; align-items:center; gap:6px; padding:6px 10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; transition:all 0.12s; font-size:11.5px; color:var(--text2); }
-.details-related-card:hover { border-color:var(--accent); color:var(--text); background:var(--surface2); }
-.details-related-card .rel-icon { font-size:14px; }
-.details-empty { color:var(--text3); font-size:12px; font-style:italic; padding:20px; text-align:center; }
+/* Guide panel */
+#guide-panel{display:none;flex:1;overflow-y:auto;padding:14px;background:#0b0c10;}
+.gs{margin-bottom:16px;}
+.gs h4{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:7px;}
+.gs p{font-size:11.5px;color:var(--text2);line-height:1.6;margin-bottom:5px;}
+.gc{font-family:var(--mono);font-size:10.5px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:9px 11px;color:#c8d0e0;line-height:1.7;white-space:pre;overflow-x:auto;margin:5px 0;}
+.gp{display:flex;gap:8px;align-items:baseline;margin:3px 0;}
+.gp-n{font-family:var(--mono);font-size:11px;color:var(--amber);min-width:72px;flex-shrink:0;}
+.gp-d{font-size:11px;color:var(--text2);}
 
-#settings-panel { display:none; flex-direction:column; gap:14px; padding:16px; overflow-y:auto; flex:1; }
-.setting-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.setting-label { color:var(--text2); font-size:12px; }
-.setting-row select, .setting-row input[type=number] { background:var(--surface2); border:1px solid var(--border2); color:var(--text); padding:4px 8px; border-radius:var(--radius); font-size:12px; }
-.setting-row select:focus, .setting-row input[type=number]:focus { outline:none; border-color:var(--accent); }
-.setting-row input[type=color] { height:28px; width:48px; border:1px solid var(--border2); border-radius:4px; cursor:pointer; background:transparent; }
+/* Settings panel */
+#settings-panel{display:none;flex-direction:column;gap:12px;padding:14px;overflow-y:auto;flex:1;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.setting-label{color:var(--text2);font-size:12px;}
+.setting-row select,.setting-row input[type=number]{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:var(--r);font-size:12px;outline:none;}
+.setting-row input[type=color]{height:26px;width:46px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;background:transparent;}
+.setting-row input[type=checkbox]{accent-color:var(--accent);}
 
-#editor-footer { border-top:1px solid var(--border); padding:10px 14px; display:flex; align-items:flex-start; gap:8px; flex-shrink:0; background:var(--surface); }
-#run-btn { background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:8px 16px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:background 0.12s; }
-#run-btn:hover { background:var(--accent2); }
-#save-btn { background:var(--surface2); color:var(--green); border:1px solid rgba(62,207,142,0.3); border-radius:var(--radius); padding:8px 14px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.12s; }
-#save-btn:hover { background:var(--green-dim); }
-#share-btn { background:var(--blue-dim); color:var(--blue); border:1px solid rgba(74,158,255,0.3); border-radius:var(--radius); padding:8px 14px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.12s; }
-#share-btn:hover { background:rgba(74,158,255,0.22); }
-#error-console { flex:1; font-family:var(--mono); font-size:11px; color:var(--red); background:var(--red-dim); border:1px solid rgba(245,91,91,0.2); border-radius:var(--radius); padding:6px 10px; min-height:36px; display:none; overflow-y:auto; max-height:80px; white-space:pre-wrap; word-break:break-all; }
-#error-console.visible { display:block; }
-#ok-console { flex:1; font-size:11px; color:var(--green); background:var(--green-dim); border:1px solid rgba(62,207,142,0.2); border-radius:var(--radius); padding:6px 10px; display:none; }
-#ok-console.visible { display:block; }
+#editor-footer{border-top:1px solid var(--border);padding:9px 12px;display:flex;align-items:flex-start;gap:7px;flex-shrink:0;background:var(--surface);}
+#run-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background 0.12s;}
+#run-btn:hover{background:var(--accent2);}
+#save-btn{background:var(--surface2);color:var(--green);border:1px solid rgba(62,207,142,0.3);border-radius:var(--r);padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.12s;}
+#save-btn:hover{background:var(--green-dim);}
+#error-console{flex:1;font-family:var(--mono);font-size:11px;color:var(--red);background:var(--red-dim);border:1px solid rgba(245,91,91,0.2);border-radius:var(--r);padding:5px 9px;min-height:32px;display:none;overflow-y:auto;max-height:70px;white-space:pre-wrap;word-break:break-all;}
+#error-console.visible{display:block;}
+#ok-console{flex:1;font-size:11px;color:var(--green);background:var(--green-dim);border:1px solid rgba(62,207,142,0.2);border-radius:var(--r);padding:5px 9px;display:none;}
+#ok-console.visible{display:block;}
+
+/* Library drawer */
+#lib-drawer{position:fixed;top:0;left:0;bottom:0;width:300px;background:var(--surface);border-right:1px solid var(--border2);z-index:50;transform:translateX(-100%);transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden;}
+#lib-drawer.open{transform:translateX(0);}
+#lib-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49;display:none;}
+#lib-overlay.open{display:block;}
+.drawer-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.drawer-title{font-size:13px;font-weight:600;flex:1;}
+.drawer-close{width:26px;height:26px;border:none;background:none;color:var(--text2);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;border-radius:5px;}
+.drawer-close:hover{background:var(--surface2);color:var(--text);}
+.drawer-search{padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.drawer-search input{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--r);padding:6px 10px;font-size:12px;outline:none;}
+.drawer-search input:focus{border-color:var(--accent);}
+.drawer-body{flex:1;overflow-y:auto;padding:8px 0;}
+.drawer-cat{margin-bottom:4px;}
+.drawer-cat-header{display:flex;align-items:center;gap:7px;padding:6px 14px;cursor:pointer;user-select:none;}
+.drawer-cat-header:hover{background:var(--surface2);}
+.drawer-cat-icon{font-size:13px;}
+.drawer-cat-name{font-size:12px;font-weight:600;color:var(--text2);flex:1;}
+.drawer-cat-count{font-size:10px;color:var(--text3);}
+.drawer-cat-chevron{font-size:10px;color:var(--text3);transition:transform 0.15s;}
+.drawer-cat.collapsed .drawer-cat-chevron{transform:rotate(-90deg);}
+.drawer-cat.collapsed .drawer-sim-list{display:none;}
+.drawer-sim-list{}
+.drawer-sim{display:flex;align-items:center;gap:9px;padding:7px 14px 7px 28px;cursor:pointer;transition:background 0.1s;}
+.drawer-sim:hover{background:var(--surface2);}
+.drawer-sim.active{background:var(--accent-dim);}
+.drawer-sim-icon{font-size:13px;flex-shrink:0;}
+.drawer-sim-info{flex:1;min-width:0;}
+.drawer-sim-name{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.drawer-sim-cat{font-size:10px;color:var(--text3);}
+.drawer-sim-tag{font-size:10px;padding:1px 5px;border-radius:3px;flex-shrink:0;}
 
 /* Save modal */
-#save-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100; align-items:center; justify-content:center; }
-#save-modal.open { display:flex; }
-.modal-box { background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:22px; width:360px; display:flex; flex-direction:column; gap:14px; }
-.modal-title { font-size:15px; font-weight:600; }
-.modal-row { display:flex; flex-direction:column; gap:5px; }
-.modal-row label { font-size:11px; color:var(--text2); }
-.modal-row input, .modal-row textarea, .modal-row select { background:var(--surface2); border:1px solid var(--border2); color:var(--text); border-radius:var(--radius); padding:7px 10px; font-size:13px; outline:none; }
-.modal-row input:focus, .modal-row textarea:focus { border-color:var(--accent); }
-.modal-row textarea { resize:vertical; min-height:60px; font-family:inherit; }
-.modal-actions { display:flex; gap:8px; justify-content:flex-end; }
-.modal-cancel { background:var(--surface2); color:var(--text2); border:1px solid var(--border2); border-radius:var(--radius); padding:7px 14px; font-size:12px; cursor:pointer; }
-.modal-cancel:hover { color:var(--text); }
-.modal-save { background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
-.modal-save:hover { background:var(--accent2); }
+#save-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;}
+#save-modal.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:20px;width:340px;display:flex;flex-direction:column;gap:12px;}
+.modal-title{font-size:14px;font-weight:600;}
+.modal-row{display:flex;flex-direction:column;gap:4px;}
+.modal-row label{font-size:11px;color:var(--text2);}
+.modal-row input,.modal-row textarea,.modal-row select{background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--r);padding:7px 10px;font-size:13px;outline:none;font-family:inherit;}
+.modal-row input:focus,.modal-row textarea:focus{border-color:var(--accent);}
+.modal-row textarea{resize:vertical;min-height:56px;}
+.modal-actions{display:flex;gap:7px;justify-content:flex-end;}
+.modal-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);border-radius:var(--r);padding:7px 13px;font-size:12px;cursor:pointer;}
+.modal-save{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:7px 15px;font-size:12px;font-weight:600;cursor:pointer;}
 
-/* Share toast */
-#share-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface); border:1px solid var(--blue); color:var(--blue); padding:10px 20px; border-radius:var(--radius); font-size:12px; font-weight:500; z-index:200; transition:transform 0.3s ease; pointer-events:none; display:flex; align-items:center; gap:8px; }
-#share-toast.show { transform:translateX(-50%) translateY(0); }
+/* Auth section */
+#auth-section{display:flex;align-items:center;gap:10px;}
+.user-menu{position:relative;}
+.user-avatar{width:32px;height:32px;border-radius:50%;cursor:pointer;border:2px solid var(--border2);transition:border-color 0.12s;object-fit:cover;}
+.user-avatar:hover{border-color:var(--accent);}
+.user-dropdown{position:absolute;top:40px;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);min-width:180px;display:none;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+.user-dropdown.open{display:block;}
+.dropdown-item{padding:10px 14px;font-size:12px;color:var(--text2);cursor:pointer;transition:background 0.1s;display:flex;align-items:center;gap:8px;}
+.dropdown-item:hover{background:var(--surface2);color:var(--text);}
+.dropdown-item:first-child{border-radius:var(--r) var(--r) 0 0;}
+.dropdown-item:last-child{border-radius:0 0 var(--r) var(--r);}
+.dropdown-divider{height:1px;background:var(--border);margin:4px 0;}
 
-/* Shared banner */
-#shared-banner { display:none; background:var(--blue-dim); border-bottom:1px solid rgba(74,158,255,0.3); padding:8px 14px; font-size:12px; color:var(--blue); align-items:center; gap:8px; flex-shrink:0; }
-#shared-banner.visible { display:flex; }
-#shared-banner button { background:rgba(74,158,255,0.2); border:1px solid rgba(74,158,255,0.4); color:var(--blue); border-radius:4px; padding:3px 10px; font-size:11px; cursor:pointer; margin-left:auto; }
-
-::-webkit-scrollbar { width:5px; height:5px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:3px; }
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
 </style>
 </head>
 <body>
 
+<!-- TOPBAR -->
 <div id="topbar">
-  <div id="logo" onclick="goHome()" title="Home"><div id="logo-dot"></div> SimForge</div>
-  <div id="topbar-editor-btns" style="display:none; gap:8px; align-items:center;">
-    <button class="topbar-btn" onclick="goHome()">← Library</button>
-    <span id="sim-name-display" style="font-size:12px;color:var(--text2);font-style:italic;"></span>
+  <div id="logo" onclick="goHome()"><div id="logo-dot"></div>SimForge</div>
+  <div id="sim-breadcrumb">
+    <span class="cat" id="bc-cat"></span>
+    <span class="sep">›</span>
+    <span class="name" id="bc-name"></span>
   </div>
   <div class="spacer"></div>
-  <span id="fps-badge" style="display:none">-- FPS</span>
-  <div id="auth-section"></div>
+  <div id="nav-arrows">
+    <button class="nav-arr" id="prev-btn" title="Previous simulation" onclick="navSim(-1)">‹</button>
+    <button class="nav-arr" id="next-btn" title="Next simulation" onclick="navSim(1)">›</button>
+  </div>
+  <button class="tbtn" id="lib-toggle-btn" style="display:none" onclick="toggleDrawer()">☰ Library</button>
+  <button class="tbtn" id="new-sim-btn-top" onclick="newSim()">＋ New</button>
+  <div id="auth-section" style="display:flex;align-items:center;gap:10px;"></div>
+  <span id="fps-badge">-- FPS</span>
 </div>
 
-<div id="shared-banner">
-  <span></span>
-  <span id="shared-banner-text">Viewing a shared simulation</span>
-  <button onclick="forkSharedSim()">🍴 Fork & Edit</button>
-</div>
-
-<div id="home-screen">
+<!-- HOME -->
+<div id="home">
   <div class="home-hero">
-    <canvas id="hero-canvas" width="520" height="130"></canvas>
-    <div class="hero-title">Build any <span>simulation</span>.</div>
-    <div class="hero-sub">Write JavaScript to define particles, rules, and parameters. SimForge handles rendering, controls, and real-time UI.</div>
-    <div class="hero-actions">
-      <button class="btn-primary" onclick="newSim()">＋ New Simulation</button>
-      <button class="btn-secondary" onclick="loadPreset('virus')">Try a preset →</button>
+    <div class="home-hero-inner">
+    <canvas id="hero-canvas" width="340" height="110"></canvas>
+    <div class="hero-text">
+      <div class="hero-title">Interactive <span>Science</span><br>Simulations</div>
+      <div class="hero-sub">Build, explore and share simulations for physics, chemistry, biology and more. Write JavaScript logic — SimForge handles everything else.</div>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="newSim()">＋ Build your own</button>
+        <button class="btn-secondary" onclick="scrollToSims()">Browse library ↓</button>
+      </div>
+    </div>
     </div>
   </div>
-  <div>
-    <div class="section-title">Browse by category</div>
-    <div class="category-bar" id="category-bar"></div>
-  </div>
-  <div>
-    <div class="section-title" id="lib-section-title">Simulation library</div>
-    <div class="lib-grid" id="lib-grid"></div>
+  <div class="home-body">
+    <div class="home-body-inner">
+      <div class="home-search-row">
+        <input id="home-search" placeholder="🔍  Search simulations…" oninput="renderHome()">
+        <div class="cat-filter" id="cat-filter"></div>
+      </div>
+      <div id="home-sims"></div>
+    </div>
   </div>
 </div>
 
-<div id="gallery-screen">
-  <div class="gallery-header">
-    <div class="gallery-title">🌐 Community Gallery</div>
-    <select class="gallery-sort" id="gallery-sort" onchange="loadGallery()">
-      <option value="recent">Most Recent</option>
-      <option value="popular">Most Popular</option>
-      <option value="liked">Most Liked</option>
-    </select>
-  </div>
-  <div class="gallery-grid" id="gallery-grid"></div>
-</div>
-
-<div id="editor-screen">
+<!-- EDITOR -->
+<div id="editor">
   <div id="main">
     <div id="left-panel">
       <div id="canvas-toolbar">
-        <button class="ctrl-btn" id="play-btn" title="Play / Pause">▶</button>
-        <button class="ctrl-btn" id="step-btn" title="Step one frame">⏭</button>
-        <button class="ctrl-btn" id="reset-btn" title="Reset">↺</button>
+        <button class="ctrl-btn" id="play-btn" title="Play/Pause" onclick="togglePlay()">▶</button>
+        <button class="ctrl-btn" id="step-btn" title="Step" onclick="doStep()">⏭</button>
+        <button class="ctrl-btn" id="reset-btn" title="Reset" onclick="doReset()">↺</button>
         <span id="frame-counter">frame 0</span>
-        <div style="width:1px;height:20px;background:var(--border2);margin:0 4px;"></div>
-        <button class="ctrl-btn nav-btn" id="prev-sim-btn" title="Previous simulation" onclick="navigateSim(-1)">◂ Prev</button>
-        <span id="sim-nav-label" title="Click to browse category" onclick="browseCurrentCategory()">—</span>
-        <button class="ctrl-btn nav-btn" id="next-sim-btn" title="Next simulation" onclick="navigateSim(1)">Next ▸</button>
         <div class="spacer"></div>
         <span id="sim-status" class="status-idle">idle</span>
       </div>
       <div id="canvas-wrap">
         <canvas id="sim-canvas"></canvas>
-        <div id="canvas-overlay">
-          <div id="overlay-icon">⚗️</div>
-          <div id="overlay-msg">Click ⚡ Compile & Run to start</div>
-        </div>
+        <div id="canvas-overlay"><div id="overlay-icon">⚗️</div><div id="overlay-msg">Click ⚡ Compile & Run</div></div>
       </div>
-      <div id="params-bar">
-        <div id="params-inner"><span class="params-empty">No parameters yet.</span></div>
-      </div>
+      <div id="params-bar"><div id="params-inner"><span class="params-empty">No parameters yet.</span></div></div>
     </div>
-
     <div id="right-panel">
       <div id="editor-tabs">
-        <button class="tab-btn active" onclick="switchEditorTab('code')">Logic</button>
-        <button class="tab-btn" onclick="switchEditorTab('details')">Details</button>
-        <button class="tab-btn" onclick="switchEditorTab('guide')">Guide</button>
-        <button class="tab-btn" onclick="switchEditorTab('settings')">Settings</button>
+        <button class="tab-btn active" onclick="switchTab('code')">Logic</button>
+        <button class="tab-btn" onclick="switchTab('about')">About</button>
+        <button class="tab-btn" onclick="switchTab('guide')">Guide</button>
+        <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
       </div>
-
-      <div id="editor-wrap">
-        <textarea id="code-editor" spellcheck="false"></textarea>
-      </div>
-
-      <!-- Details Panel -->
-      <div id="details-panel"></div>
-
+      <div id="editor-wrap"><textarea id="code-editor" spellcheck="false"></textarea></div>
+      <div id="about-panel"></div>
       <div id="guide-panel">
-        <div class="guide-section">
-          <h4>The 3 functions</h4>
-          <p><strong style="color:var(--amber)">defineParameters()</strong> — return an array of parameter objects. Each becomes a live slider or input in the controls bar below the canvas.</p>
-          <div class="g-code">{ name:"rate", type:"slider", min:0, max:1, default:0.3, step:0.01 }
-{ name:"count", type:"number", min:1, max:1000, default:100 }
-{ name:"wrap", type:"checkbox", default:true }</div>
-          <p><strong style="color:var(--amber)">init(params)</strong> — called once on Play/Reset. Returns your initial entities array. params holds current slider values.</p>
-          <p><strong style="color:var(--amber)">update(entities, params)</strong> — called ~60× per second. Returns the new entities array. Use spread: <code style="color:var(--accent)">return entities.map(e => ({...e, x: e.x+e.vx}))</code></p>
+        <div class="gs"><h4>Three functions — the full API</h4>
+          <p><strong style="color:var(--amber)">defineParameters()</strong> — return an array of control definitions. SimForge renders them as live sliders and inputs below the canvas.</p>
+          <div class="gc">return [
+  { name:"speed",  type:"slider",   min:0.1, max:5, default:2, step:0.1 },
+  { name:"count",  type:"number",   min:1, max:500, default:100 },
+  { name:"wrap",   type:"checkbox", default:true }
+]</div>
+          <p><strong style="color:var(--amber)">init(params)</strong> — called once on Play/Reset. Build and return your entities array.</p>
+          <p><strong style="color:var(--amber)">update(entities, params)</strong> — called ~60× per second. Return the next state. Use spread to avoid mutation:</p>
+          <div class="gc">return entities.map(e => ({ ...e, x: e.x + e.vx, y: e.y + e.vy }));</div>
         </div>
-        <div class="guide-section">
-          <h4>Entity properties</h4>
-          <div class="g-prop"><span class="g-prop-name">x, y</span><span class="g-prop-desc">Canvas position. Default canvas: 800×550.</span></div>
-          <div class="g-prop"><span class="g-prop-name">shape</span><span class="g-prop-desc">'circle' | 'rect' | 'triangle'</span></div>
-          <div class="g-prop"><span class="g-prop-name">radius</span><span class="g-prop-desc">Size (rect uses radius × radius unless height set)</span></div>
-          <div class="g-prop"><span class="g-prop-name">color</span><span class="g-prop-desc">Any CSS color. 'transparent' skips drawing.</span></div>
-          <div class="g-prop"><span class="g-prop-name">angle</span><span class="g-prop-desc">Rotation in radians (triangles)</span></div>
-          <div class="g-prop"><span class="g-prop-name">trail</span><span class="g-prop-desc">Array of {x,y} for motion trails</span></div>
-          <div class="g-prop"><span class="g-prop-name">label</span><span class="g-prop-desc">String drawn above entity</span></div>
+        <div class="gs"><h4>Entity properties</h4>
+          <div class="gp"><span class="gp-n">x, y</span><span class="gp-d">Position (canvas: 800×550 default)</span></div>
+          <div class="gp"><span class="gp-n">vx, vy</span><span class="gp-d">Velocity components</span></div>
+          <div class="gp"><span class="gp-n">shape</span><span class="gp-d">'circle' | 'rect' | 'triangle'</span></div>
+          <div class="gp"><span class="gp-n">radius</span><span class="gp-d">Size in pixels</span></div>
+          <div class="gp"><span class="gp-n">color</span><span class="gp-d">Any CSS color; 'transparent' skips draw</span></div>
+          <div class="gp"><span class="gp-n">angle</span><span class="gp-d">Rotation radians (triangles)</span></div>
+          <div class="gp"><span class="gp-n">trail</span><span class="gp-d">Array of {x,y} — draws motion path</span></div>
+          <div class="gp"><span class="gp-n">label</span><span class="gp-d">String drawn above entity</span></div>
         </div>
-        <div class="guide-section">
-          <h4>Useful snippets</h4>
-          <div class="g-code">// Distance between two entities
-const dx = a.x - b.x, dy = a.y - b.y;
-const dist = Math.sqrt(dx*dx + dy*dy);
+        <div class="gs"><h4>Useful snippets</h4>
+          <div class="gc">// Distance
+const d = Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2);
 
-// Bounce off walls (W=800, H=550)
-if (e.x &lt; 0 || e.x &gt; W) e.vx *= -1;
-if (e.y &lt; 0 || e.y &gt; H) e.vy *= -1;
+// Bounce walls (W=800, H=550)
+if (e.x&lt;0||e.x&gt;W) e.vx*=-1;
+if (e.y&lt;0||e.y&gt;H) e.vy*=-1;
 
-// Wrap around edges
-if (e.x &lt; 0) e.x += W;
-if (e.x &gt; W) e.x -= W;
+// Wrap edges
+e.x = ((e.x % W) + W) % W;
 
-// Keep trail (last 30 positions)
-const trail = [...(e.trail||[]), {x:e.x, y:e.y}];
-if (trail.length &gt; 30) trail.shift();
+// Trail (last 30 positions)
+const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-30);
 
-// Random color
-\`hsl(\${Math.random()*360}, 70%, 65%)\`</div>
+// Random HSL color
+`hsl(${Math.random()*360|0}, 70%, 60%)`</div>
         </div>
-        <div class="guide-section">
-          <h4>Tips</h4>
-          <p>• <strong style="color:var(--text)">Ctrl+Enter</strong> compiles and runs without the button.</p>
-          <p>• Slider changes take effect immediately — no recompile needed.</p>
-          <p>• Use <strong style="color:var(--text)">Step ⏭</strong> to advance one frame at a time for debugging.</p>
-          <p>• Click <strong style="color:var(--green)">Save</strong> to add this to your library.</p>
-          <p>• Click <strong style="color:var(--blue)">Share</strong> to get a link you can send to anyone.</p>
+        <div class="gs"><h4>Tips</h4>
+          <p>• <strong style="color:var(--text)">Ctrl+Enter</strong> compiles without clicking the button.</p>
+          <p>• Slider changes apply live — no recompile needed.</p>
+          <p>• Use ⏭ Step to advance one frame for debugging.</p>
+          <p>• The About tab lets you document your simulation for educators.</p>
         </div>
       </div>
-
       <div id="settings-panel">
-        <div class="setting-row"><span class="setting-label">Target FPS</span><input type="number" id="set-fps" value="60" min="1" max="120" style="width:70px"></div>
-        <div class="setting-row"><span class="setting-label">Canvas width</span><input type="number" id="set-cw" value="800" min="100" max="2000" style="width:80px"></div>
-        <div class="setting-row"><span class="setting-label">Canvas height</span><input type="number" id="set-ch" value="550" min="100" max="2000" style="width:80px"></div>
-        <div class="setting-row"><span class="setting-label">Background color</span><input type="color" id="set-bg" value="#090a0d"></div>
+        <div class="setting-row"><span class="setting-label">Target FPS</span><input type="number" id="set-fps" value="60" min="1" max="120" style="width:65px"></div>
+        <div class="setting-row"><span class="setting-label">Canvas width</span><input type="number" id="set-cw" value="800" min="100" max="2000" style="width:75px"></div>
+        <div class="setting-row"><span class="setting-label">Canvas height</span><input type="number" id="set-ch" value="550" min="100" max="2000" style="width:75px"></div>
+        <div class="setting-row"><span class="setting-label">Background</span><input type="color" id="set-bg" value="#090a0d"></div>
         <div class="setting-row"><span class="setting-label">Motion trails</span><input type="checkbox" id="set-trail" checked></div>
-        <div style="margin-top:4px"><button class="ctrl-btn" style="width:auto;padding:0 14px;font-size:12px" onclick="applySettings()">Apply</button></div>
+        <div><button class="ctrl-btn" style="width:auto;padding:0 12px;font-size:11px" onclick="applySettings()">Apply</button></div>
       </div>
-
       <div id="editor-footer">
         <button id="run-btn" onclick="compileAndRun()">⚡ Compile & Run</button>
         <button id="save-btn" onclick="openSaveModal()">💾 Save</button>
-        <button id="share-btn" onclick="shareSimulation()">🔗 Share</button>
         <div id="error-console"></div>
         <div id="ok-console"></div>
       </div>
@@ -401,14 +377,35 @@ if (trail.length &gt; 30) trail.shift();
   </div>
 </div>
 
+<!-- Library Drawer -->
+<div id="lib-overlay" onclick="closeDrawer()"></div>
+<div id="lib-drawer">
+  <div class="drawer-header">
+    <span class="drawer-title">Simulation Library</span>
+    <button class="drawer-close" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-search"><input placeholder="Search…" id="drawer-search" oninput="renderDrawer()"></div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<!-- Save Modal -->
 <div id="save-modal">
   <div class="modal-box">
     <div class="modal-title">Save Simulation</div>
-    <div class="modal-row"><label>Name</label><input id="modal-name" type="text" placeholder="My Simulation"></div>
+    <div class="modal-row"><label>Name</label><input id="modal-name" placeholder="My Simulation"></div>
+    <div class="modal-row"><label>Category</label>
+      <select id="modal-cat">
+        <option value="custom">My Simulations</option>
+        <option value="physics">Physics</option>
+        <option value="chemistry">Chemistry</option>
+        <option value="biology">Biology</option>
+        <option value="mathematics">Mathematics</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
     <div class="modal-row"><label>Description</label><textarea id="modal-desc" placeholder="What does this simulate?"></textarea></div>
-    <div class="modal-row"><label>Icon (emoji)</label><input id="modal-icon" type="text" placeholder="🔬" maxlength="4" style="width:80px"></div>
-    <div class="modal-row"><label>Category</label><select id="modal-category"></select></div>
-    <div class="modal-row"><label><input type="checkbox" id="modal-public" checked> Make this simulation public</label></div>
+    <div class="modal-row"><label>Learning objectives (one per line)</label><textarea id="modal-obj" placeholder="Students will understand…" style="min-height:48px"></textarea></div>
+    <div class="modal-row"><label>Icon (emoji)</label><input id="modal-icon" placeholder="🔬" maxlength="4" style="width:70px"></div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeSaveModal()">Cancel</button>
       <button class="modal-save" onclick="saveSimulation()">Save to Library</button>
@@ -416,828 +413,656 @@ if (trail.length &gt; 30) trail.shift();
   </div>
 </div>
 
-<div id="share-toast">🔗 Share link copied to clipboard!</div>
+<div id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════
-// ⚠️ REPLACE THESE WITH YOUR SUPABASE CREDENTIALS
-// ══════════════════════════════════════════
-const SUPABASE_URL = 'https://lvyuubnvnkotruzoikjx.supabase.co'; 
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2eXV1Ym52bmtvdHJ1em9pa2p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODcyODYsImV4cCI6MjA5Njg2MzI4Nn0.zHph2tnxfZ8bkQgpHGxH9cot5cNWPIAigFdTwBl3tvE'; 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-let currentUser = null;
-let currentSimName = '', currentSimId = null, currentSimCategory = '', currentPresetKey = null;
-let isSharedSim = false, currentSimSlug = null;
-let currentCategory = 'all';
-
-const CATEGORIES = {
-  all: { name: 'All', icon: '🌐', color: '#7c6af7' },
-  physics: { name: 'Physics', icon: '️', color: '#4a9eff' },
-  chemistry: { name: 'Chemistry', icon: '⚗️', color: '#3ecf8e' },
-  biology: { name: 'Biology', icon: '🧬', color: '#f5a623' },
-  ecology: { name: 'Ecology', icon: '🌿', color: '#6bcb77' },
-  math: { name: 'Mathematics', icon: '📐', color: '#cc5de8' },
-  cs: { name: 'Algorithms', icon: '💻', color: '#74c0fc' }
+// ═══════════════════════════════════════════════════════
+// SIMULATION CATALOGUE
+// ═══════════════════════════════════════════════════════
+const CATALOGUE = {
+  physics: {
+    label:'Physics', icon:'⚛️',
+    color:'#4a9eff',
+    sims: {
+      brownian:{ name:'Brownian Motion', icon:'🌡️', desc:'Large tracer particle buffeted by gas molecules. Demonstrates kinetic theory — temperature equals average molecular kinetic energy.', concepts:['Kinetic theory','Temperature','Molecular collisions','Thermodynamics'], objectives:['Understand why particles move faster at higher temperatures','Observe that larger particles diffuse more slowly','Connect microscopic motion to macroscopic temperature'], params:[{n:'temperature',d:'Controls average kinetic energy of gas molecules'},{n:'gasParticles',d:'Number of invisible gas molecules'},{n:'particleSize',d:'Radius of the observable tracer particle'},{n:'tracerTrail',d:'Toggle to show the random walk path of the tracer'}],
+        code:`function defineParameters(){return[{name:"temperature",type:"slider",min:50,max:500,default:200,step:10},{name:"gasParticles",type:"slider",min:20,max:200,default:80,step:5},{name:"particleSize",type:"slider",min:8,max:30,default:18,step:1},{name:"tracerTrail",type:"slider",min:0,max:1,default:1,step:1}];}
+function init(p){const e=[];for(let i=0;i<p.gasParticles;i++){const spd=(Math.random()*.5+.75)*Math.sqrt(p.temperature)*.18,a=Math.random()*Math.PI*2;e.push({id:i,type:'gas',x:Math.random()*760+20,y:Math.random()*510+20,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,radius:4,shape:'circle',color:'#4a9eff'});}e.push({id:p.gasParticles,type:'tracer',x:400,y:275,vx:0,vy:0,radius:p.particleSize,mass:20,shape:'circle',color:'#f5a623',trail:[]});return e;}
+function update(entities,p){const W=800,H=550,tracer=entities.find(e=>e.type==='tracer'),gas=entities.filter(e=>e.type==='gas'),tgt=Math.sqrt(p.temperature)*.18;const ng=gas.map(e=>{let{x,y,vx,vy,radius}=e;const spd=Math.sqrt(vx*vx+vy*vy)||1;const sc=(tgt*(.75+Math.random()*.5))/spd;vx*=.98+.02*sc;vy*=.98+.02*sc;x+=vx;y+=vy;if(x<radius){x=radius;vx=Math.abs(vx);}if(x>W-radius){x=W-radius;vx=-Math.abs(vx);}if(y<radius){y=radius;vy=Math.abs(vy);}if(y>H-radius){y=H-radius;vy=-Math.abs(vy);}const dx=x-tracer.x,dy=y-tracer.y,dist=Math.sqrt(dx*dx+dy*dy),min=radius+tracer.radius;if(dist<min&&dist>0){const nx=dx/dist,ny=dy/dist,rv=(vx-tracer.vx)*nx+(vy-tracer.vy)*ny;if(rv<0){const imp=2*rv/(1+1/tracer.mass);vx-=imp*nx;vy-=imp*ny;tracer.vx+=(imp/tracer.mass)*nx;tracer.vy+=(imp/tracer.mass)*ny;const ov=min-dist;x+=nx*ov*.6;y+=ny*ov*.6;}}const heat=Math.min(Math.sqrt(vx*vx+vy*vy)/(tgt*1.5),1);return{...e,x,y,vx,vy,color:\`hsl(\${200-heat*160},70%,60%)\`};});let tx=tracer.x+tracer.vx,ty=tracer.y+tracer.vy;tracer.vx*=.995;tracer.vy*=.995;if(tx<tracer.radius){tx=tracer.radius;tracer.vx=Math.abs(tracer.vx);}if(tx>W-tracer.radius){tx=W-tracer.radius;tracer.vx=-Math.abs(tracer.vx);}if(ty<tracer.radius){ty=tracer.radius;tracer.vy=Math.abs(tracer.vy);}if(ty>H-tracer.radius){ty=H-tracer.radius;tracer.vy=-Math.abs(tracer.vy);}const trail=p.tracerTrail>=.5?[...(tracer.trail||[]),{x:tracer.x,y:tracer.y}].slice(-120):[];return[...ng,{...tracer,x:tx,y:ty,trail}];}`},
+      electric:{ name:'Electric Fields', icon:'⚡', desc:'Point charges create vector fields. Field line density shows strength. Visualises Coulomb\'s law and superposition.', concepts:["Coulomb's law",'Electric field','Superposition','Field line density'], objectives:['Understand that field line density represents field strength','See how multiple charges superpose their fields','Predict field shape for dipoles and like-charges'], params:[{n:'charge1',d:'Magnitude of left charge (negative = attractive)'},{n:'charge2',d:'Magnitude of right charge'},{n:'charge3',d:'Magnitude of top charge (set 0 to remove)'},{n:'tracers',d:'Number of field line particles'},{n:'trailLen',d:'Length of each particle trail'}],
+        code:`function defineParameters(){return[{name:"charge1",type:"slider",min:-5,max:5,default:3,step:.5},{name:"charge2",type:"slider",min:-5,max:5,default:-3,step:.5},{name:"charge3",type:"slider",min:-5,max:5,default:0,step:.5},{name:"tracers",type:"slider",min:20,max:300,default:120,step:10},{name:"trailLen",type:"slider",min:5,max:60,default:25,step:5}];}
+function chargeColor(q){if(q===0)return'#555566';return q>0?\`hsl(10,90%,\${30+Math.abs(q)*8}%)\`:\`hsl(210,90%,\${30+Math.abs(q)*8}%)\`;}
+function init(p){const e=[];e.push({id:'C1',type:'charge',x:220,y:275,q:p.charge1,shape:'circle',radius:14,color:chargeColor(p.charge1),label:p.charge1>0?'+':'−'});e.push({id:'C2',type:'charge',x:580,y:275,q:p.charge2,shape:'circle',radius:14,color:chargeColor(p.charge2),label:p.charge2>0?'+':'−'});e.push({id:'C3',type:'charge',x:400,y:150,q:p.charge3,shape:'circle',radius:14,color:chargeColor(p.charge3),label:p.charge3>0?'+':p.charge3<0?'−':'·'});for(let i=0;i<p.tracers;i++)e.push({id:'T'+i,type:'tracer',x:Math.random()*720+40,y:Math.random()*470+40,vx:0,vy:0,radius:2,shape:'circle',color:'rgba(255,255,255,0.6)',trail:[]});return e;}
+function update(entities,p){const charges=entities.filter(e=>e.type==='charge');const tracers=entities.filter(e=>e.type==='tracer');const nc=charges.map((c,i)=>{const q=[p.charge1,p.charge2,p.charge3][i];return{...c,q,color:chargeColor(q),label:q>0?'+':q<0?'−':'·'};});const nt=tracers.map(e=>{let fx=0,fy=0;nc.forEach(c=>{if(c.q===0)return;const dx=e.x-c.x,dy=e.y-c.y,r2=dx*dx+dy*dy,r=Math.sqrt(r2)||1;if(r<c.radius+2)return;const f=c.q/(r2+200);fx+=(dx/r)*f;fy+=(dy/r)*f;});const fm=Math.sqrt(fx*fx+fy*fy)||1;let nx=e.x+(fx/fm)*2.5,ny=e.y+(fy/fm)*2.5;const near=nc.some(c=>{const dx=nx-c.x,dy=ny-c.y;return Math.sqrt(dx*dx+dy*dy)<c.radius+4;});if(nx<2||nx>798||ny<2||ny>548||near){return{...e,x:Math.random()*720+40,y:Math.random()*470+40,trail:[]};}const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-p.trailLen);const lf=Math.min(Math.log(fm*500+1)/6,1);return{...e,x:nx,y:ny,trail,color:\`hsla(\${200-lf*160},80%,65%,0.7)\`};});return[...nc,...nt];}` },
+      gravity:{ name:'Orbital Gravity', icon:'🌌', desc:'N-body gravitational simulation. Bodies attract each other with F=Gm₁m₂/r². Observe stable orbits, slingshots and collisions.', concepts:['Gravitational force','Inverse square law','Orbital mechanics','Conservation of momentum'], objectives:['See how mass and distance affect gravitational force','Observe how initial velocity determines orbit shape','Explore why planetary systems form stable configurations'], params:[{n:'bodies',d:'Number of gravitating bodies'},{n:'G',d:'Gravitational constant — increase for faster, stronger interactions'},{n:'trailLen',d:'Length of orbital trail per body'}],
+        code:`function defineParameters(){return[{name:"bodies",type:"slider",min:2,max:20,default:6,step:1},{name:"G",type:"slider",min:100,max:5000,default:1000,step:100},{name:"trailLen",type:"slider",min:0,max:60,default:20,step:5}];}
+function init(p){const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#cc5de8','#f06595','#74c0fc'];const out=[];for(let i=0;i<p.bodies;i++){const a=(i/p.bodies)*Math.PI*2,r=120+Math.random()*100,mass=20+Math.random()*60,spd=Math.sqrt(p.G*200/r)*.4;out.push({x:400+Math.cos(a)*r,y:275+Math.sin(a)*r,vx:-Math.sin(a)*spd,vy:Math.cos(a)*spd,mass,radius:Math.sqrt(mass)*1.5,shape:'circle',color:colors[i%colors.length],trail:[]});}return out;}
+function update(entities,p){return entities.map((e,i)=>{let ax=0,ay=0;for(let j=0;j<entities.length;j++){if(i===j)continue;const dx=entities[j].x-e.x,dy=entities[j].y-e.y,d=Math.sqrt(dx*dx+dy*dy)+10,f=p.G*entities[j].mass/(d*d+100);ax+=(dx/d)*f;ay+=(dy/d)*f;}const nvx=e.vx+ax*.3,nvy=e.vy+ay*.3,nx=e.x+nvx*.3,ny=e.y+nvy*.3;const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-p.trailLen);return{...e,x:nx,y:ny,vx:nvx,vy:nvy,trail};});}` }
+    }
+  },
+  chemistry: {
+    label:'Chemistry', icon:'⚗️',
+    color:'#3ecf8e',
+    sims: {
+      enzyme:{ name:'Enzyme Kinetics', icon:'🔬', desc:'Michaelis-Menten kinetics visualised. Substrate molecules collide with enzymes to form ES complexes, then release products.', concepts:['Michaelis-Menten kinetics','Enzyme saturation','Active site binding','Km and Vmax'], objectives:['Observe enzyme saturation at high substrate concentrations','Understand why reaction rate plateaus (Vmax)','See the ES complex formation and product release cycle'], params:[{n:'substrateCount',d:'Number of substrate molecules — increase to observe saturation'},{n:'enzymeCount',d:'Number of enzyme molecules'},{n:'bindRate',d:'Probability of binding when substrate meets enzyme'},{n:'catalysisRate',d:'Rate at which ES complex converts to product'},{n:'releaseRate',d:'How quickly product detaches from enzyme'}],
+        code:`function defineParameters(){return[{name:"substrateCount",type:"slider",min:10,max:200,default:80,step:5},{name:"enzymeCount",type:"slider",min:2,max:30,default:10,step:1},{name:"bindRate",type:"slider",min:.01,max:.3,default:.12,step:.01},{name:"catalysisRate",type:"slider",min:.005,max:.1,default:.02,step:.005},{name:"releaseRate",type:"slider",min:.01,max:.2,default:.05,step:.01}];}
+function init(p){const e=[];for(let i=0;i<p.substrateCount;i++){const a=Math.random()*Math.PI*2,s=1.2+Math.random()*1.5;e.push({id:'S'+i,type:'substrate',x:Math.random()*760+20,y:Math.random()*510+20,vx:Math.cos(a)*s,vy:Math.sin(a)*s,radius:5,shape:'circle',color:'#4a9eff',bound:false,boundTo:null});}for(let i=0;i<p.enzymeCount;i++)e.push({id:'E'+i,type:'enzyme',x:80+(i%5)*140,y:80+Math.floor(i/5)*130,vx:0,vy:0,radius:18,shape:'circle',color:'#3ecf8e',occupied:false,occupiedBy:null,timer:0,label:'E'});return e;}
+function update(entities,p){const W=800,H=550;const substrates=entities.filter(e=>e.type==='substrate');const enzymes=entities.filter(e=>e.type==='enzyme');const products=entities.filter(e=>e.type==='product');const ne=enzymes.map(e=>{const en={...e};if(en.occupied){en.timer++;en.color='#f5a623';en.label='ES';if(Math.random()<p.catalysisRate){en.occupied=false;en.occupiedBy=null;en.timer=0;en.color='#3ecf8e';en.label='E';const sub=substrates.find(s=>s.id===e.occupiedBy);if(sub)sub._convert=true;}}return en;});const ns=[];substrates.forEach(e=>{if(e._convert){ns.push({...e,type:'product',color:'#f5a623',vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,radius:4,bound:false,boundTo:null,_convert:false});return;}let{x,y,vx,vy,bound}=e;const en={...e};if(bound){const eg=ne.find(z=>z.id===e.boundTo);if(eg){en.x=eg.x+(Math.random()-.5)*4;en.y=eg.y+(Math.random()-.5)*4;}ns.push(en);return;}x+=vx;y+=vy;if(x<5){x=5;vx=Math.abs(vx);}if(x>W-5){x=W-5;vx=-Math.abs(vx);}if(y<5){y=5;vy=Math.abs(vy);}if(y>H-5){y=H-5;vy=-Math.abs(vy);}for(const eg of ne){if(eg.occupied)continue;const dx=x-eg.x,dy=y-eg.y;if(Math.sqrt(dx*dx+dy*dy)<eg.radius+6&&Math.random()<p.bindRate){en.bound=true;en.boundTo=eg.id;en.color='#7c6af7';eg.occupied=true;eg.occupiedBy=e.id;break;}}ns.push({...en,x,y,vx,vy});});const np=products.map(e=>{let{x,y,vx,vy}=e;x+=vx;y+=vy;vx*=.99;vy*=.99;if(x<5||x>W-5)vx*=-1;if(y<5||y>H-5)vy*=-1;return{...e,x,y,vx,vy};});return[...ns,...ne,...np];}` },
+      diffusion:{ name:'Molecular Diffusion', icon:'💧', desc:'Random walk / Brownian motion. Particles diffuse from high to low concentration. Demonstrates Fick\'s law qualitatively.', concepts:["Fick's law",'Concentration gradient','Random walk','Entropy'], objectives:["Observe that particles spread from high to low concentration","Understand that diffusion doesn't require active transport","See how temperature (step size) affects diffusion rate"], params:[{n:'particles',d:'Number of diffusing molecules'},{n:'stepSize',d:'Distance per step — analogous to temperature'},{n:'drift',d:'Directional bias — simulates a concentration gradient'},{n:'colorAge',d:'Toggle age-based colouring to see diffusion distance'}],
+        code:`function defineParameters(){return[{name:"particles",type:"slider",min:100,max:2000,default:600,step:50},{name:"stepSize",type:"slider",min:.5,max:5,default:1.5,step:.1},{name:"drift",type:"slider",min:-2,max:2,default:0,step:.1},{name:"colorAge",type:"slider",min:0,max:1,default:1,step:1}];}
+function init(p){return Array.from({length:p.particles},()=>({x:400,y:275,age:0,radius:2.5,shape:'circle',color:'#7c6af7'}));}
+function update(entities,p){return entities.map(e=>{const a=Math.random()*Math.PI*2;let nx=e.x+Math.cos(a)*p.stepSize+p.drift*.1,ny=e.y+Math.sin(a)*p.stepSize;const age=e.age+1;if(nx<0||nx>800||ny<0||ny>550){nx=400;ny=275;}let color='#7c6af7';if(p.colorAge>=.5){const t=Math.min(age/300,1);color=\`rgb(\${Math.round(124+(255-124)*t)},\${Math.round(106+(75-106)*t)},\${Math.round(247+(75-247)*t)})\`;}return{...e,x:nx,y:ny,age,color};});}` }
+    }
+  },
+  biology: {
+    label:'Biology', icon:'🧬',
+    color:'#3ecf8e',
+    sims: {
+      sir:{ name:'Virus Spread (SIR)', icon:'🦠', desc:'Susceptible-Infected-Recovered epidemic model. The gold standard for understanding how diseases spread through populations.', concepts:['SIR model','Herd immunity','R-naught (R₀)','Epidemiology'], objectives:['Understand what R₀ means and how it drives epidemic growth','Discover the herd immunity threshold','See why flattening the curve matters'], params:[{n:'population',d:'Total number of individuals in the simulation'},{n:'infectionRate',d:'Probability of transmission per contact (drives R₀)'},{n:'recoveryRate',d:'Rate at which infected individuals recover'},{n:'moveSpeed',d:'How fast individuals move'},{n:'initialInfected',d:'Number of individuals infected at the start'}],
+        code:`function defineParameters(){return[{name:"population",type:"slider",min:50,max:500,default:200,step:10},{name:"infectionRate",type:"slider",min:.01,max:.5,default:.15,step:.01},{name:"recoveryRate",type:"slider",min:.001,max:.05,default:.01,step:.001},{name:"moveSpeed",type:"slider",min:.5,max:4,default:1.5,step:.1},{name:"initialInfected",type:"number",min:1,max:20,default:3}];}
+function init(p){const out=[];for(let i=0;i<p.population;i++){out.push({x:Math.random()*780+10,y:Math.random()*530+10,vx:(Math.random()-.5)*p.moveSpeed*2,vy:(Math.random()-.5)*p.moveSpeed*2,state:i<p.initialInfected?'I':'S',radius:5,shape:'circle'});}return out;}
+function update(entities,p){return entities.map((e,i)=>{const ne={...e};ne.x+=ne.vx;ne.y+=ne.vy;if(ne.x<5||ne.x>795)ne.vx*=-1;if(ne.y<5||ne.y>545)ne.vy*=-1;ne.x=Math.max(5,Math.min(795,ne.x));ne.y=Math.max(5,Math.min(545,ne.y));if(ne.state==='S'){for(let j=0;j<entities.length;j++){if(entities[j].state==='I'){const dx=ne.x-entities[j].x,dy=ne.y-entities[j].y;if(Math.sqrt(dx*dx+dy*dy)<14&&Math.random()<p.infectionRate){ne.state='I';break;}}}}else if(ne.state==='I'){if(Math.random()<p.recoveryRate)ne.state='R';}ne.color=ne.state==='S'?'#4a9eff':ne.state==='I'?'#ff4a4a':'#3ecf8e';return ne;});}` },
+      lotka:{ name:'Predator-Prey', icon:'🦊', desc:'Spatial Lotka-Volterra model. Rabbits and foxes populations oscillate out of phase — the fundamental cycle of ecology.', concepts:['Lotka-Volterra equations','Population oscillation','Carrying capacity','Trophic cascade'], objectives:['Observe the classic out-of-phase population cycle','Find parameter values that cause extinction','Understand why removing predators can destabilise ecosystems'], params:[{n:'birthRateRabbit',d:'Rate at which rabbits reproduce'},{n:'deathRateRabbit',d:'Natural rabbit death rate'},{n:'birthRateFox',d:'Rate at which foxes reproduce (requires eating)'},{n:'deathRateFox',d:'Fox starvation rate'},{n:'visionRadius',d:'How far foxes and rabbits can see'}],
+        code:`function defineParameters(){return[{name:"birthRateRabbit",type:"slider",min:.001,max:.02,default:.006,step:.001},{name:"deathRateRabbit",type:"slider",min:.001,max:.02,default:.006,step:.001},{name:"birthRateFox",type:"slider",min:.001,max:.01,default:.003,step:.001},{name:"deathRateFox",type:"slider",min:.001,max:.02,default:.008,step:.001},{name:"visionRadius",type:"slider",min:20,max:120,default:60,step:5}];}
+function init(p){const e=[];for(let i=0;i<80;i++){const a=Math.random()*Math.PI*2;e.push({id:Math.random(),type:'rabbit',x:Math.random()*760+20,y:Math.random()*510+20,vx:Math.cos(a)*1.2,vy:Math.sin(a)*1.2,radius:5,shape:'circle',color:'#e8e8f0',energy:80+Math.random()*40});}for(let i=0;i<15;i++){const a=Math.random()*Math.PI*2;e.push({id:Math.random(),type:'fox',x:Math.random()*760+20,y:Math.random()*510+20,vx:Math.cos(a)*1.6,vy:Math.sin(a)*1.6,radius:8,shape:'triangle',color:'#f5832a',energy:100+Math.random()*50,angle:a});}return e;}
+function update(entities,p){const W=800,H=550,rabbits=entities.filter(e=>e.type==='rabbit'),foxes=entities.filter(e=>e.type==='fox'),out=[];rabbits.forEach(e=>{let{x,y,vx,vy,energy}=e;let flee=null,fd=p.visionRadius;foxes.forEach(f=>{const dx=f.x-x,dy=f.y-y,d=Math.sqrt(dx*dx+dy*dy);if(d<fd){flee=f;fd=d;}});if(flee){const dx=x-flee.x,dy=y-flee.y,d=Math.sqrt(dx*dx+dy*dy)||1;vx+=(dx/d)*.3;vy+=(dy/d)*.3;}else{vx+=(Math.random()-.5)*.3;vy+=(Math.random()-.5)*.3;}const spd=Math.sqrt(vx*vx+vy*vy)||1;if(spd>1.8){vx=(vx/spd)*1.8;vy=(vy/spd)*1.8;}x+=vx;y+=vy;if(x<5){x=5;vx=Math.abs(vx);}if(x>W-5){x=W-5;vx=-Math.abs(vx);}if(y<5){y=5;vy=Math.abs(vy);}if(y>H-5){y=H-5;vy=-Math.abs(vy);}energy=Math.min(energy-.15+.08,150);if(energy<=0)return;const ne={...e,x,y,vx,vy,energy};if(energy>120&&Math.random()<p.birthRateRabbit){out.push({...ne,id:Math.random(),x:x+Math.random()*10-5,y:y+Math.random()*10-5,vx:Math.cos(Math.random()*Math.PI*2)*1.2,vy:Math.sin(Math.random()*Math.PI*2)*1.2,energy:60});ne.energy=70;}out.push(ne);});foxes.forEach(e=>{let{x,y,vx,vy,energy}=e;let prey=null,pd=p.visionRadius;rabbits.forEach(r=>{const dx=r.x-x,dy=r.y-y,d=Math.sqrt(dx*dx+dy*dy);if(d<pd){prey=r;pd=d;}});if(prey){const dx=prey.x-x,dy=prey.y-y,d=Math.sqrt(dx*dx+dy*dy)||1;vx+=(dx/d)*.35;vy+=(dy/d)*.35;if(d<12){energy+=60;const ri=rabbits.indexOf(prey);if(ri>-1)rabbits.splice(ri,1);const ni=out.findIndex(n=>n.id===prey.id);if(ni>-1)out.splice(ni,1);}}else{vx+=(Math.random()-.5)*.4;vy+=(Math.random()-.5)*.4;}const spd=Math.sqrt(vx*vx+vy*vy)||1;if(spd>2.2){vx=(vx/spd)*2.2;vy=(vy/spd)*2.2;}x+=vx;y+=vy;if(x<5){x=5;vx=Math.abs(vx);}if(x>W-5){x=W-5;vx=-Math.abs(vx);}if(y<5){y=5;vy=Math.abs(vy);}if(y>H-5){y=H-5;vy=-Math.abs(vy);}energy-=.3;if(energy<=0)return;const er=Math.min(energy/150,1),ne={...e,x,y,vx,vy,energy,angle:Math.atan2(vy,vx),color:\`hsl(\${25+er*15},85%,\${35+er*20}%)\`};if(energy>140&&Math.random()<p.birthRateFox){out.push({...ne,id:Math.random(),energy:80});ne.energy=80;}out.push(ne);});return out.length>0?out:init(p);}` },
+      wildfire:{ name:'Wildfire Spread', icon:'🔥', desc:'Forest fire cellular automaton. Trees grow, lightning ignites fires, wind drives spread. Models real wildfire dynamics.', concepts:['Cellular automaton','Percolation theory','Fire ecology','Environmental modelling'], objectives:["See how wind direction affects fire spread patterns","Discover the critical density threshold for fire percolation","Understand why forest management matters for fire prevention"], params:[{n:'growthRate',d:'Rate at which empty land regrows into forest'},{n:'lightningRate',d:'Probability of lightning striking any tree'},{n:'spreadRate',d:'Probability of fire spreading to adjacent trees'},{n:'windX',d:'Wind direction and strength (positive = right)'},{n:'cellSize',d:'Resolution of the grid'}],
+        code:`function defineParameters(){return[{name:"growthRate",type:"slider",min:.001,max:.05,default:.008,step:.001},{name:"lightningRate",type:"slider",min:.0001,max:.005,default:.0005,step:.0001},{name:"spreadRate",type:"slider",min:.1,max:1,default:.6,step:.05},{name:"windX",type:"slider",min:-1,max:1,default:.3,step:.05},{name:"cellSize",type:"slider",min:6,max:20,default:10,step:2}];}
+function stateColor(s,h){if(s==='empty')return'#1a1d12';if(s==='tree')return'#2d6a1f';if(s==='ash')return'#3a3530';return\`rgb(255,\${Math.round(80+h*140)},\${Math.round(h*60)})\`;}
+function init(p){const cs=p.cellSize,cols=Math.floor(800/cs),rows=Math.floor(550/cs),out=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const s=Math.random()<.55?'tree':'empty';out.push({x:c*cs,y:r*cs,col:c,row:r,cols,rows,cs,state:s,heat:0,shape:'rect',radius:cs-1,height:cs-1,color:stateColor(s,0)});}return out;}
+function update(entities,p){const{cols,rows}=entities[0];const fireSet=new Set();entities.forEach((e,i)=>{if(e.state==='fire')fireSet.add(i);});return entities.map((e,i)=>{const ne={...e};if(ne.state==='empty'){if(Math.random()<p.growthRate)ne.state='tree';}else if(ne.state==='tree'){if(Math.random()<p.lightningRate){ne.state='fire';ne.heat=1;}else{const dirs=[[-1,0,1-p.windX*.4],[1,0,1+p.windX*.4],[0,-1,1],[0,1,1]];for(const[dr,dc,bias]of dirs){const nr=e.row+dr,nc=e.col+dc;if(nr<0||nr>=rows||nc<0||nc>=cols)continue;if(fireSet.has(nr*cols+nc)&&Math.random()<p.spreadRate*bias*.08){ne.state='fire';ne.heat=.8+Math.random()*.2;break;}}}}else if(ne.state==='fire'){ne.heat-=.015+Math.random()*.01;if(ne.heat<=0){ne.state='ash';ne.heat=0;}}else if(ne.state==='ash'){if(Math.random()<p.growthRate*.3)ne.state='empty';}ne.color=stateColor(ne.state,ne.heat);return ne;});}` }
+    }
+  },
+  mathematics: {
+    label:'Mathematics', icon:'📐',
+    color:'#f5a623',
+    sims: {
+      life:{ name:"Conway's Game of Life", icon:'🔲', desc:'Cellular automaton with four simple rules generating complex emergent patterns. Demonstrates emergence and computational universality.', concepts:['Cellular automaton','Emergence','Turing completeness','Self-organisation'], objectives:['Observe how simple rules create complex, unpredictable patterns','Find stable structures (still lifes), oscillators, and gliders','Understand emergence — complexity from simplicity'], params:[{n:'cellSize',d:'Grid resolution — smaller cells = more detail'},{n:'density',d:'Initial fraction of live cells'},{n:'speed',d:'Generations per frame'}],
+        code:`function defineParameters(){return[{name:"cellSize",type:"slider",min:4,max:20,default:8,step:2},{name:"density",type:"slider",min:.1,max:.7,default:.3,step:.05},{name:"speed",type:"slider",min:1,max:10,default:3,step:1}];}
+function init(p){const cs=p.cellSize,cols=Math.floor(800/cs),rows=Math.floor(550/cs),out=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const alive=Math.random()<p.density;out.push({x:c*cs,y:r*cs,col:c,row:r,cols,rows,alive,shape:'rect',radius:cs-1,height:cs-1,color:alive?'#7c6af7':'transparent',speedCtr:0});}return out;}
+function update(entities,p){const{cols,rows}=entities[0],alive=new Set(entities.filter(e=>e.alive).map(e=>e.row*cols+e.col)),steps=Math.max(1,Math.round(11-p.speed));return entities.map(e=>{const ne={...e};ne.speedCtr=(ne.speedCtr||0)+1;if(ne.speedCtr<steps){ne.color=ne.alive?'#7c6af7':'transparent';return ne;}ne.speedCtr=0;let n=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(dr===0&&dc===0)continue;const r=((e.row+dr)+rows)%rows,c=((e.col+dc)+cols)%cols;if(alive.has(r*cols+c))n++;}ne.alive=ne.alive?(n===2||n===3):n===3;ne.color=ne.alive?'#7c6af7':'transparent';return ne;});}` },
+      prisoners:{ name:"Prisoner's Dilemma", icon:'🎮', desc:'Spatial game theory — cooperators vs defectors. Each cell copies the most successful neighbour. Watch strategy patterns evolve.', concepts:['Game theory',"Nash equilibrium",'Evolutionary dynamics','Spatial games'], objectives:['Find the temptation value (b) where cooperators and defectors coexist','Observe that cooperators survive by clustering together','Understand why cooperation can be evolutionarily stable'], params:[{n:'b',d:'Temptation to defect — the key parameter. Watch the phase transition around b=1.8'},{n:'noise',d:'Random mutation rate — prevents lock-in'},{n:'initDefect',d:'Starting fraction of defectors'},{n:'cellSize',d:'Grid resolution'},{n:'speed',d:'Generations per frame'}],
+        code:`function defineParameters(){return[{name:"cellSize",type:"slider",min:4,max:16,default:8,step:2},{name:"b",type:"slider",min:1,max:2.5,default:1.65,step:.05},{name:"noise",type:"slider",min:0,max:.2,default:.02,step:.01},{name:"initDefect",type:"slider",min:.1,max:.9,default:.3,step:.05},{name:"speed",type:"slider",min:1,max:10,default:4,step:1}];}
+function init(p){const cs=p.cellSize,cols=Math.floor(800/cs),rows=Math.floor(550/cs),out=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const d=Math.random()<p.initDefect;out.push({x:c*cs,y:r*cs,col:c,row:r,cols,rows,strategy:d?1:0,score:0,shape:'rect',radius:cs-1,height:cs-1,color:d?'#e05252':'#4a90d9'});}return out;}
+function update(entities,p){const{cols,rows}=entities[0],b=p.b,steps=Math.max(1,Math.round(p.speed));let cur=entities;for(let s=0;s<steps;s++){const sc=cur.map((e,i)=>{let score=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(dr===0&&dc===0)continue;const nr=e.row+dr,nc=e.col+dc;if(nr<0||nr>=rows||nc<0||nc>=cols)continue;const nb=cur[nr*cols+nc];if(e.strategy===0&&nb.strategy===0)score+=1;else if(e.strategy===1&&nb.strategy===0)score+=b;}return{...e,score};});cur=sc.map((e,i)=>{let best=e;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=e.row+dr,nc=e.col+dc;if(nr<0||nr>=rows||nc<0||nc>=cols)continue;const nb=sc[nr*cols+nc];if(nb.score>best.score)best=nb;}let strategy=best.strategy;if(Math.random()<p.noise)strategy=Math.random()<.5?0:1;const color=strategy===0?\`hsl(\${210+e.score*4},70%,\${45+e.score*3}%)\`:\`hsl(\${e.score*3},70%,\${40+e.score*3}%)\`;return{...e,strategy,color};});}return cur;}` }
+    }
+  }
 };
 
-const PRESETS = {
-virus: { name:'Virus Spread (SIR)', icon:'🦠', desc:'Infectious disease simulation with susceptible, infected & recovered states.', category:'biology', tag:'preset',
-  details: {
-    concepts: ['SIR model', 'Epidemiology', 'Herd immunity', 'R0 (basic reproduction number)'],
-    objectives: [
-      'Observe how infection rate affects spread speed',
-      'Understand the concept of herd immunity threshold',
-      'See how recovery rate impacts epidemic duration',
-      'Compare outcomes with different initial infected counts'
-    ],
-    curriculum: 'High School / Intro College Biology, Public Health',
-    tips: [
-      '<strong>Try this:</strong> Set infectionRate very low (0.01) — the outbreak fizzles. Now raise it to 0.3 — watch it sweep through the population.',
-      '<strong>Key question:</strong> What percentage needs to be "recovered" (immune) before the spread stops? That\'s the herd immunity threshold.',
-      '<strong>Extension:</strong> What happens if you add a "vaccination" parameter that moves people directly from S to R?'
-    ]
-  },
-  code:`// SIR Virus Spread Simulation
-function defineParameters() {
-  return [
-    { name: "population",      type: "slider", min: 50,   max: 500,  default: 200,  step: 10 },
-    { name: "infectionRate",   type: "slider", min: 0.01, max: 0.5,  default: 0.15, step: 0.01 },
-    { name: "recoveryRate",    type: "slider", min: 0.001,max: 0.05, default: 0.01, step: 0.001 },
-    { name: "moveSpeed",       type: "slider", min: 0.5,  max: 4,    default: 1.5,  step: 0.1 },
-    { name: "initialInfected", type: "number", min: 1,    max: 20,   default: 3 }
-  ];
-}
-function init(p) {
-  const out = [];
-  for (let i = 0; i < p.population; i++) {
-    out.push({
-      x: Math.random()*780+10, y: Math.random()*530+10,
-      vx: (Math.random()-0.5)*p.moveSpeed*2,
-      vy: (Math.random()-0.5)*p.moveSpeed*2,
-      state: i < p.initialInfected ? 'I' : 'S',
-      radius: 5, shape: 'circle'
+// ═══════════════════════════════════════════════════════
+// CUSTOM LIBRARY (localStorage)
+// ═══════════════════════════════════════════════════════
+function getLib(){try{return JSON.parse(localStorage.getItem('sf_lib')||'{}');}catch{return{};}}
+function saveLib(lib){try{localStorage.setItem('sf_lib',JSON.stringify(lib));}catch{}}
+
+// ═══════════════════════════════════════════════════════
+// FLAT INDEX for navigation
+// ═══════════════════════════════════════════════════════
+function buildIndex(){
+  const idx=[];
+  Object.entries(CATALOGUE).forEach(([catKey,cat])=>{
+    Object.entries(cat.sims).forEach(([simKey,sim])=>{
+      idx.push({catKey,simKey,sim,cat,isCustom:false});
     });
-  }
-  return out;
-}
-function update(entities, p) {
-  return entities.map((e, i) => {
-    const ne = {...e};
-    ne.x += ne.vx; ne.y += ne.vy;
-    if (ne.x < 5 || ne.x > 795) ne.vx *= -1;
-    if (ne.y < 5 || ne.y > 545) ne.vy *= -1;
-    ne.x = Math.max(5, Math.min(795, ne.x));
-    ne.y = Math.max(5, Math.min(545, ne.y));
-    if (ne.state === 'S') {
-      for (let j = 0; j < entities.length; j++) {
-        if (entities[j].state === 'I') {
-          const dx = ne.x - entities[j].x, dy = ne.y - entities[j].y;
-          if (Math.sqrt(dx*dx+dy*dy) < 14 && Math.random() < p.infectionRate) {
-            ne.state = 'I'; break;
-          }
-        }
-      }
-    } else if (ne.state === 'I') {
-      if (Math.random() < p.recoveryRate) ne.state = 'R';
-    }
-    ne.color = ne.state==='S' ? '#4a9eff' : ne.state==='I' ? '#ff4a4a' : '#3ecf8e';
-    return ne;
   });
-}`},
+  const lib=getLib();
+  Object.entries(lib).forEach(([id,sim])=>{
+    idx.push({catKey:'custom',simKey:id,sim,cat:{label:'My Simulations',icon:'📁'},isCustom:true});
+  });
+  return idx;
+}
 
-boids: { name:'Boids Flocking', icon:'🐦', desc:'Emergent flocking behaviour using separation, alignment, and cohesion rules.', category:'cs', tag:'preset',
-  details: {
-    concepts: ['Emergent behavior', 'Swarm intelligence', 'Separation/Alignment/Cohesion', 'Agent-based modeling'],
-    objectives: [
-      'Observe how simple local rules create complex global patterns',
-      'Understand the three rules: separation, alignment, cohesion',
-      'Experiment with how changing one rule affects the flock',
-      'Connect to real-world: bird flocks, fish schools, crowd movement'
-    ],
-    curriculum: 'Computer Science, Complex Systems, Biology',
-    tips: [
-      '<strong>Try this:</strong> Set separation very high and cohesion to zero — the flock explodes outward. Now reverse it.',
-      '<strong>Key insight:</strong> No bird is "in charge." The flock pattern emerges from each bird following simple local rules.',
-      '<strong>Extension:</strong> Add a "predator" that the boids flee from. Watch the flock split and reform.'
-    ]
-  },
-  code:`// Boids Flocking Algorithm
-function defineParameters() {
-  return [
-    { name: "count",        type: "slider", min: 20,  max: 300, default: 120, step: 10 },
-    { name: "speed",        type: "slider", min: 0.5, max: 5,   default: 2,   step: 0.1 },
-    { name: "separation",   type: "slider", min: 0.1, max: 3,   default: 1.2, step: 0.1 },
-    { name: "alignment",    type: "slider", min: 0,   max: 2,   default: 0.8, step: 0.05 },
-    { name: "cohesion",     type: "slider", min: 0,   max: 2,   default: 0.5, step: 0.05 },
-    { name: "visionRadius", type: "slider", min: 20,  max: 100, default: 50,  step: 5 }
-  ];
-}
-function init(p) {
-  const out = [];
-  for (let i = 0; i < p.count; i++) {
-    const a = Math.random()*Math.PI*2;
-    out.push({ x:Math.random()*780+10, y:Math.random()*530+10,
-      vx:Math.cos(a)*p.speed, vy:Math.sin(a)*p.speed,
-      shape:'triangle', radius:6, color:'#7c6af7' });
-  }
-  return out;
-}
-function update(entities, p) {
-  return entities.map((e, i) => {
-    const nb = entities.filter((o,j) => {
-      if (j===i) return false;
-      const dx=o.x-e.x, dy=o.y-e.y;
-      return Math.sqrt(dx*dx+dy*dy) < p.visionRadius;
-    });
-    let ax=0, ay=0;
-    nb.forEach(o => {
-      const dx=e.x-o.x, dy=e.y-o.y, d=Math.sqrt(dx*dx+dy*dy)||1;
-      if (d<20) { ax+=(dx/d)*(20-d)*p.separation*0.1; ay+=(dy/d)*(20-d)*p.separation*0.1; }
-    });
-    if (nb.length) {
-      const avx=nb.reduce((s,o)=>s+o.vx,0)/nb.length;
-      const avy=nb.reduce((s,o)=>s+o.vy,0)/nb.length;
-      ax+=(avx-e.vx)*p.alignment*0.05; ay+=(avy-e.vy)*p.alignment*0.05;
-      const cx=nb.reduce((s,o)=>s+o.x,0)/nb.length;
-      const cy=nb.reduce((s,o)=>s+o.y,0)/nb.length;
-      ax+=(cx-e.x)*p.cohesion*0.001; ay+=(cy-e.y)*p.cohesion*0.001;
-    }
-    let nvx=e.vx+ax, nvy=e.vy+ay;
-    const spd=Math.sqrt(nvx*nvx+nvy*nvy)||1;
-    nvx=(nvx/spd)*p.speed; nvy=(nvy/spd)*p.speed;
-    let nx=e.x+nvx, ny=e.y+nvy;
-    if (nx<0) nx+=800; if (nx>800) nx-=800;
-    if (ny<0) ny+=550; if (ny>550) ny-=550;
-    return {...e, x:nx, y:ny, vx:nvx, vy:nvy, angle:Math.atan2(nvy,nvx)};
-  });
-}`},
+let simIndex=[];
+let currentIndexPos=-1;
 
-life: { name:"Conway's Life", icon:'🔲', desc:'Classic cellular automata. Living cells survive with 2–3 neighbours; dead cells spawn with exactly 3.', category:'cs', tag:'preset',
-  details: {
-    concepts: ['Cellular automata', 'Emergence', 'Turing completeness', 'Self-replication'],
-    objectives: [
-      'Observe how simple rules create complex patterns',
-      'Identify stable structures (blocks, blinkers, gliders)',
-      'Understand the concept of computational universality',
-      'Experiment with initial conditions and density'
-    ],
-    curriculum: 'Computer Science, Discrete Math, Complex Systems',
-    tips: [
-      '<strong>Try this:</strong> Set density to 0.3 — you\'ll see gliders, blinkers, and blocks emerge. Try 0.5 for more chaos.',
-      '<strong>Key insight:</strong> Conway\'s Life is Turing complete — it can simulate any computer program!',
-      '<strong>Extension:</strong> Try to build a "glider gun" that periodically emits gliders.'
-    ]
-  },
-  code:`// Conway's Game of Life
-function defineParameters() {
-  return [
-    { name: "cellSize", type: "slider", min: 4,   max: 20,  default: 8,   step: 2 },
-    { name: "density",  type: "slider", min: 0.1, max: 0.7, default: 0.3, step: 0.05 },
-    { name: "speed",    type: "slider", min: 1,   max: 10,  default: 3,   step: 1 }
-  ];
+// ═══════════════════════════════════════════════════════
+// SHARING — URL hash encoding
+// ═══════════════════════════════════════════════════════
+function encodeShare(code){
+  try{return btoa(unescape(encodeURIComponent(code)));}catch{return '';}
 }
-function init(p) {
-  const cs=p.cellSize, cols=Math.floor(800/cs), rows=Math.floor(550/cs);
-  const out=[];
-  for (let r=0; r<rows; r++) for (let c=0; c<cols; c++) {
-    out.push({ x:c*cs, y:r*cs, col:c, row:r, cols, rows,
-      alive:Math.random()<p.density, shape:'rect',
-      radius:cs-1, height:cs-1, speedCtr:0 });
-  }
-  return out;
+function decodeShare(s){
+  try{return decodeURIComponent(escape(atob(s)));}catch{return null;}
 }
-function update(entities, p) {
-  const {cols, rows} = entities[0];
-  const alive = new Set(entities.filter(e=>e.alive).map(e=>e.row*cols+e.col));
-  const steps = Math.max(1, Math.round(11-p.speed));
-  return entities.map(e => {
-    const ne={...e};
-    ne.speedCtr=(ne.speedCtr||0)+1;
-    if (ne.speedCtr < steps) { ne.color=ne.alive?'#7c6af7':'transparent'; return ne; }
-    ne.speedCtr=0;
-    let n=0;
-    for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) {
-      if (dr===0&&dc===0) continue;
-      const r=((e.row+dr)+rows)%rows, c=((e.col+dc)+cols)%cols;
-      if (alive.has(r*cols+c)) n++;
-    }
-    ne.alive = ne.alive ? (n===2||n===3) : n===3;
-    ne.color = ne.alive ? '#7c6af7' : 'transparent';
-    return ne;
-  });
-}`},
-
-gravity: { name:'Gravity Orbits', icon:'🌌', desc:'N-body gravitational simulation with momentum trails.', category:'physics', tag:'preset',
-  details: {
-    concepts: ['Newton\'s law of gravitation', 'Orbital mechanics', 'N-body problem', 'Conservation of momentum'],
-    objectives: [
-      'Observe how mass affects gravitational attraction',
-      'Understand stable vs. unstable orbits',
-      'See the chaotic nature of the 3+ body problem',
-      'Connect to real planetary motion'
-    ],
-    curriculum: 'Physics, Astronomy',
-    tips: [
-      '<strong>Try this:</strong> Start with 2 bodies — you\'ll get clean elliptical orbits. Add a 3rd and watch chaos emerge.',
-      '<strong>Key insight:</strong> The N-body problem has no general closed-form solution for N≥3. This is fundamental!',
-      '<strong>Extension:</strong> Add a massive "sun" at the center and see how planets orbit it.'
-    ]
-  },
-  code:`// N-Body Gravity
-function defineParameters() {
-  return [
-    { name: "bodies",   type: "slider", min: 2,   max: 20,   default: 6,    step: 1 },
-    { name: "G",        type: "slider", min: 100, max: 5000, default: 1000, step: 100 },
-    { name: "trailLen", type: "slider", min: 0,   max: 60,   default: 20,   step: 5 }
-  ];
-}
-function init(p) {
-  const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#cc5de8','#f06595','#74c0fc'];
-  const out=[];
-  for (let i=0; i<p.bodies; i++) {
-    const a=(i/p.bodies)*Math.PI*2, r=120+Math.random()*100;
-    const mass=20+Math.random()*60;
-    const spd=Math.sqrt(p.G*200/r)*0.4;
-    out.push({ x:400+Math.cos(a)*r, y:275+Math.sin(a)*r,
-      vx:-Math.sin(a)*spd, vy:Math.cos(a)*spd,
-      mass, radius:Math.sqrt(mass)*1.5, shape:'circle',
-      color:colors[i%colors.length], trail:[] });
-  }
-  return out;
-}
-function update(entities, p) {
-  return entities.map((e,i) => {
-    let ax=0, ay=0;
-    for (let j=0;j<entities.length;j++) {
-      if (i===j) continue;
-      const dx=entities[j].x-e.x, dy=entities[j].y-e.y;
-      const d=Math.sqrt(dx*dx+dy*dy)+10;
-      const f=p.G*entities[j].mass/(d*d+100);
-      ax+=(dx/d)*f; ay+=(dy/d)*f;
-    }
-    const nvx=e.vx+ax*0.3, nvy=e.vy+ay*0.3;
-    const nx=e.x+nvx*0.3, ny=e.y+nvy*0.3;
-    const trail=[...(e.trail||[]),{x:e.x,y:e.y}];
-    if (trail.length>p.trailLen) trail.shift();
-    return {...e, x:nx, y:ny, vx:nvx, vy:nvy, trail};
-  });
-}`},
-
-diffusion: { name:'Diffusion', icon:'💧', desc:'Brownian motion / random walk with optional drift and age-based colouring.', category:'physics', tag:'preset',
-  details: {
-    concepts: ['Brownian motion', 'Random walk', 'Diffusion', 'Statistical mechanics'],
-    objectives: [
-      'Observe how random motion leads to spreading',
-      'Understand the relationship between step size and diffusion rate',
-      'See how drift biases the random walk',
-      'Connect to real-world: perfume spreading, dye in water'
-    ],
-    curriculum: 'Physics, Chemistry, Statistics',
-    tips: [
-      '<strong>Try this:</strong> Set drift to 0 and watch symmetric spreading. Now add drift=1 — see the directional bias.',
-      '<strong>Key insight:</strong> Even though each particle moves randomly, the overall pattern is predictable (diffusion equation).',
-      '<strong>Extension:</strong> Add a barrier in the middle and see how diffusion is blocked.'
-    ]
-  },
-  code:`// Particle Diffusion
-function defineParameters() {
-  return [
-    { name: "particles", type: "slider", min: 100,  max: 2000, default: 600, step: 50 },
-    { name: "stepSize",  type: "slider", min: 0.5,  max: 5,    default: 1.5, step: 0.1 },
-    { name: "drift",     type: "slider", min: -2,   max: 2,    default: 0,   step: 0.1 },
-    { name: "colorAge",  type: "slider", min: 0,    max: 1,    default: 1,   step: 1 }
-  ];
-}
-function init(p) {
-  return Array.from({length:p.particles}, () => ({
-    x:400, y:275, age:0, radius:2.5, shape:'circle', color:'#7c6af7'
-  }));
-}
-function update(entities, p) {
-  return entities.map(e => {
-    const a=Math.random()*Math.PI*2;
-    let nx=e.x+Math.cos(a)*p.stepSize+p.drift*0.1;
-    let ny=e.y+Math.sin(a)*p.stepSize;
-    const age=e.age+1;
-    if (nx<0||nx>800||ny<0||ny>550) { nx=400; ny=275; }
-    let color='#7c6af7';
-    if (p.colorAge>=0.5) {
-      const t=Math.min(age/300,1);
-      color=\`rgb(\${Math.round(124+(255-124)*t)},\${Math.round(106+(75-106)*t)},\${Math.round(247+(75-247)*t)})\`;
-    }
-    return {...e, x:nx, y:ny, age, color};
-  });
-}`},
-
-brownian: { name:'Brownian Motion', icon:'🌡️', desc:'Kinetic theory of gases — watch how temperature drives molecular collisions and random motion.', category:'physics', tag:'preset',
-  details: {
-    concepts: ['Kinetic theory of gases', 'Temperature as kinetic energy', 'Elastic collisions', 'Brownian motion'],
-    objectives: [
-      'Observe how temperature affects molecular speed',
-      'Understand that temperature = average kinetic energy',
-      'See how large particles get buffeted by small ones',
-      'Connect to real-world: why sugar dissolves faster in hot water'
-    ],
-    curriculum: 'Physics, Chemistry (Thermodynamics)',
-    tips: [
-      '<strong>Try this:</strong> Set temperature to 50 — the orange particle barely moves. Now crank it to 500 — watch it get hammered!',
-      '<strong>Key insight:</strong> The invisible gas molecules are moving fast. We only see their effect on the large tracer particle.',
-      '<strong>Extension:</strong> Make the tracer much larger (particleSize=30) — it moves less because it\'s harder to push.'
-    ]
-  },
-  code:`// Brownian Motion — kinetic theory of gases
-function defineParameters() {
-  return [
-    { name: "temperature",    type: "slider", min: 50,  max: 500, default: 200, step: 10 },
-    { name: "gasParticles",   type: "slider", min: 20,  max: 200, default: 80,  step: 5 },
-    { name: "particleSize",   type: "slider", min: 8,   max: 30,  default: 18,  step: 1 },
-    { name: "tracerTrail",    type: "slider", min: 0,   max: 1,   default: 1,   step: 1 }
-  ];
-}
-function init(p) {
-  const entities = [];
-  for (let i = 0; i < p.gasParticles; i++) {
-    const speed = (Math.random() * 0.5 + 0.75) * Math.sqrt(p.temperature) * 0.18;
-    const angle = Math.random() * Math.PI * 2;
-    entities.push({
-      id: i, type: 'gas',
-      x: Math.random() * 760 + 20, y: Math.random() * 510 + 20,
-      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-      radius: 4, shape: 'circle',
-      color: \`hsl(\${180 + Math.random()*60}, 70%, 60%)\`
-    });
-  }
-  entities.push({
-    id: p.gasParticles, type: 'tracer',
-    x: 400, y: 275, vx: 0, vy: 0,
-    radius: p.particleSize, mass: 20, shape: 'circle',
-    color: '#f5a623', trail: []
-  });
-  return entities;
-}
-function update(entities, p) {
-  const W = 800, H = 550;
-  const tracer = entities.find(e => e.type === 'tracer');
-  const gas = entities.filter(e => e.type === 'gas');
-  const targetSpeed = Math.sqrt(p.temperature) * 0.18;
-  const newGas = gas.map(e => {
-    let { x, y, vx, vy, radius } = e;
-    const spd = Math.sqrt(vx*vx + vy*vy) || 1;
-    const scale = (targetSpeed * (0.75 + Math.random()*0.5)) / spd;
-    vx *= 0.98 + 0.02 * scale; vy *= 0.98 + 0.02 * scale;
-    x += vx; y += vy;
-    if (x < radius) { x = radius; vx = Math.abs(vx); }
-    if (x > W-radius) { x = W-radius; vx = -Math.abs(vx); }
-    if (y < radius) { y = radius; vy = Math.abs(vy); }
-    if (y > H-radius) { y = H-radius; vy = -Math.abs(vy); }
-    const dx = x - tracer.x, dy = y - tracer.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const minDist = radius + tracer.radius;
-    if (dist < minDist && dist > 0) {
-      const nx = dx/dist, ny = dy/dist;
-      const relV = (vx - tracer.vx)*nx + (vy - tracer.vy)*ny;
-      if (relV < 0) {
-        const impulse = 2 * relV / (1 + 1/tracer.mass);
-        vx -= impulse * nx; vy -= impulse * ny;
-        tracer.vx += (impulse / tracer.mass) * nx;
-        tracer.vy += (impulse / tracer.mass) * ny;
-        const overlap = minDist - dist;
-        x += nx * overlap * 0.6; y += ny * overlap * 0.6;
-      }
-    }
-    const heat = Math.min(Math.sqrt(vx*vx+vy*vy) / (targetSpeed * 1.5), 1);
-    return { ...e, x, y, vx, vy, color: \`hsl(\${200 - heat*160}, 70%, 60%)\` };
-  });
-  let tx = tracer.x + tracer.vx, ty = tracer.y + tracer.vy;
-  tracer.vx *= 0.995; tracer.vy *= 0.995;
-  if (tx < tracer.radius) { tx = tracer.radius; tracer.vx = Math.abs(tracer.vx); }
-  if (tx > W-tracer.radius) { tx = W-tracer.radius; tracer.vx = -Math.abs(tracer.vx); }
-  if (ty < tracer.radius) { ty = tracer.radius; tracer.vy = Math.abs(tracer.vy); }
-  if (ty > H-tracer.radius) { ty = H-tracer.radius; tracer.vy = -Math.abs(tracer.vy); }
-  const trail = p.tracerTrail >= 0.5
-    ? [...(tracer.trail || []), { x: tracer.x, y: tracer.y }].slice(-120) : [];
-  const newTracer = { ...tracer, x: tx, y: ty, trail };
-  return [...newGas, newTracer];
-}`},
-
-enzyme: { name:'Enzyme Kinetics', icon:'🔬', desc:'Michaelis-Menten enzyme kinetics — substrate binds enzyme, gets converted to product.', category:'chemistry', tag:'preset',
-  details: {
-    concepts: ['Enzyme kinetics', 'Michaelis-Menten', 'Saturation', 'ES complex', 'Catalysis'],
-    objectives: [
-      'Observe how enzymes speed up reactions',
-      'Understand enzyme saturation — why rate plateaus',
-      'See the ES complex (enzyme-substrate) form and release product',
-      'Connect to real biochemistry: drug design, metabolic pathways'
-    ],
-    curriculum: 'Biology, Biochemistry',
-    tips: [
-      '<strong>Try this:</strong> Add more substrate — does the reaction speed up forever? No! The enzymes get saturated.',
-      '<strong>Key insight:</strong> When all enzymes are busy (orange), adding more substrate doesn\'t help. That\'s Vmax.',
-      '<strong>Extension:</strong> What happens if you add an "inhibitor" that blocks enzymes?'
-    ]
-  },
-  code:`// Enzyme Kinetics — Michaelis-Menten
-function defineParameters() {
-  return [
-    { name: "substrateCount", type: "slider", min: 10,  max: 200, default: 80,  step: 5 },
-    { name: "enzymeCount",    type: "slider", min: 2,   max: 30,  default: 10,  step: 1 },
-    { name: "bindRate",       type: "slider", min: 0.01,max: 0.3, default: 0.12,step: 0.01 },
-    { name: "catalysisRate",  type: "slider", min: 0.005,max:0.1, default: 0.02,step: 0.005 },
-    { name: "releaseRate",    type: "slider", min: 0.01,max: 0.2, default: 0.05,step: 0.01 }
-  ];
-}
-function init(p) {
-  const entities = [];
-  for (let i = 0; i < p.substrateCount; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const spd = 1.2 + Math.random() * 1.5;
-    entities.push({
-      id: 'S' + i, type: 'substrate',
-      x: Math.random()*760+20, y: Math.random()*510+20,
-      vx: Math.cos(a)*spd, vy: Math.sin(a)*spd,
-      radius: 5, shape: 'circle', color: '#4a9eff',
-      bound: false, boundTo: null
-    });
-  }
-  for (let i = 0; i < p.enzymeCount; i++) {
-    entities.push({
-      id: 'E' + i, type: 'enzyme',
-      x: 80 + (i % 5) * 140, y: 80 + Math.floor(i / 5) * 130,
-      vx: 0, vy: 0, radius: 18, shape: 'circle', color: '#3ecf8e',
-      occupied: false, occupiedBy: null, timer: 0, label: 'E'
-    });
-  }
-  return entities;
-}
-function update(entities, p) {
-  const W = 800, H = 550;
-  const substrates = entities.filter(e => e.type === 'substrate');
-  const enzymes = entities.filter(e => e.type === 'enzyme');
-  const products = entities.filter(e => e.type === 'product');
-  const newEnzymes = enzymes.map(e => {
-    const ne = { ...e };
-    if (ne.occupied) {
-      ne.timer++;
-      ne.color = '#f5a623'; ne.label = 'ES';
-      if (Math.random() < p.catalysisRate) {
-        ne.occupied = false; ne.occupiedBy = null;
-        ne.timer = 0; ne.color = '#3ecf8e'; ne.label = 'E';
-        const sub = substrates.find(s => s.id === e.occupiedBy);
-        if (sub) sub._convert = true;
-      }
-    }
-    return ne;
-  });
-  const newSubstrates = [];
-  substrates.forEach(e => {
-    if (e._convert) {
-      newSubstrates.push({
-        ...e, type: 'product', color: '#f5a623',
-        vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2,
-        radius: 4, bound: false, boundTo: null, _convert: false
-      });
-      return;
-    }
-    let { x, y, vx, vy, bound } = e;
-    const ne = { ...e };
-    if (bound) {
-      const eng = newEnzymes.find(en => en.id === e.boundTo);
-      if (eng) { ne.x = eng.x + (Math.random()-0.5)*4; ne.y = eng.y + (Math.random()-0.5)*4; }
-      newSubstrates.push(ne); return;
-    }
-    x += vx; y += vy;
-    if (x < 5) { x = 5; vx = Math.abs(vx); }
-    if (x > W-5) { x = W-5; vx = -Math.abs(vx); }
-    if (y < 5) { y = 5; vy = Math.abs(vy); }
-    if (y > H-5) { y = H-5; vy = -Math.abs(vy); }
-    for (const eng of newEnzymes) {
-      if (eng.occupied) continue;
-      const dx = x - eng.x, dy = y - eng.y;
-      if (Math.sqrt(dx*dx+dy*dy) < eng.radius + 6 && Math.random() < p.bindRate) {
-        ne.bound = true; ne.boundTo = eng.id; ne.color = '#7c6af7';
-        eng.occupied = true; eng.occupiedBy = e.id; break;
-      }
-    }
-    newSubstrates.push({ ...ne, x, y, vx, vy });
-  });
-  const newProducts = products.map(e => {
-    let { x, y, vx, vy } = e;
-    x += vx; y += vy; vx *= 0.99; vy *= 0.99;
-    if (x<5||x>W-5) vx*=-1; if (y<5||y>H-5) vy*=-1;
-    return { ...e, x, y, vx, vy };
-  });
-  return [...newSubstrates, ...newEnzymes, ...newProducts];
-}`},
-
-orbital: { name:'Atomic Orbitals', icon:'⚛️', desc:'Hydrogen electron probability clouds — sampled from real wavefunctions.', category:'chemistry', tag:'preset',
-  details: {
-    concepts: ['Quantum mechanics', 'Wavefunctions', 'Probability density', 'Atomic orbitals (s, p, d)'],
-    objectives: [
-      'Visualize electron probability distributions',
-      'Understand that orbitals are probability clouds, not fixed paths',
-      'See how orbital shape changes with quantum numbers',
-      'Connect to the periodic table and chemical bonding'
-    ],
-    curriculum: 'Chemistry, Quantum Physics',
-    tips: [
-      '<strong>Try this:</strong> Switch between orbitals 1-5. The 1s is a sphere, 2p shows dumbbell lobes, 3d has clover shapes.',
-      '<strong>Key insight:</strong> Each dot is a random sample from the probability distribution. Dense regions = high probability.',
-      '<strong>Extension:</strong> Increase electron count to 3000 for a clearer picture of the orbital shape.'
-    ]
-  },
-  code:`// Hydrogen Atomic Orbitals — probability density
-function defineParameters() {
-  return [
-    { name: "orbital",    type: "slider", min: 1, max: 5, default: 1, step: 1 },
-    { name: "electrons",  type: "slider", min: 100, max: 3000, default: 1200, step: 100 },
-    { name: "scale",      type: "slider", min: 20, max: 120, default: 55, step: 5 },
-    { name: "speed",      type: "slider", min: 1, max: 8, default: 3, step: 1 }
-  ];
-}
-function psi2(r, theta, orbitalN) {
-  const rn = r / 20;
-  switch(orbitalN) {
-    case 1: return Math.exp(-2*rn);
-    case 2: return rn*rn * Math.exp(-rn) * Math.pow(Math.sin(theta),2);
-    case 3: return rn*rn * Math.exp(-rn) * Math.pow(Math.cos(theta),2);
-    case 4: return Math.pow(rn,4) * Math.exp(-2*rn/3) * Math.pow(Math.sin(theta)*Math.cos(theta),2);
-    case 5: return Math.pow(rn,4) * Math.exp(-2*rn/3) * Math.pow(2*Math.cos(theta)*Math.cos(theta)-Math.sin(theta)*Math.sin(theta),2);
-    default: return Math.exp(-2*rn);
-  }
-}
-function sampleOrbital(n, scale) {
-  for (let attempt = 0; attempt < 200; attempt++) {
-    const x = (Math.random()-0.5) * scale * 2.2;
-    const y = (Math.random()-0.5) * scale * 2.2;
-    const r = Math.sqrt(x*x + y*y);
-    const theta = Math.atan2(y, x) + Math.PI/2;
-    const prob = psi2(r, theta, n);
-    if (Math.random() < prob * 1.2) return { x, y, prob };
-  }
+function getShareUrl(type,id,code){
+  const base=location.href.split('#')[0];
+  if(type==='preset') return base+'#sim/'+id;
+  if(type==='custom_saved') return base+'#custom/'+id;
+  // Encode code in URL
+  const enc=encodeShare(code);
+  if(enc.length<4000) return base+'#share/'+enc;
   return null;
 }
-function init(p) {
-  const cx = 400, cy = 275;
-  const entities = [];
-  const ORBITAL_COLORS = ['#4a9eff','#3ecf8e','#f5a623','#cc5de8','#ff6b6b'];
-  const col = ORBITAL_COLORS[(p.orbital - 1) % ORBITAL_COLORS.length];
-  for (let i = 0; i < p.electrons; i++) {
-    const s = sampleOrbital(p.orbital, p.scale);
-    if (!s) continue;
-    entities.push({
-      x: cx + s.x, y: cy + s.y,
-      baseX: s.x, baseY: s.y, prob: s.prob,
-      radius: 1.5, shape: 'circle', color: col,
-      phase: Math.random() * Math.PI * 2,
-      orb: p.orbital, scale: p.scale, cx, cy
-    });
-  }
-  return entities;
-}
-function update(entities, p) {
-  const cx = 400, cy = 275;
-  const stepsPerFrame = Math.round(p.speed);
-  if (entities.length > 0 && entities[0].orb !== p.orbital) return init(p);
-  const ORBITAL_COLORS = ['#4a9eff','#3ecf8e','#f5a623','#cc5de8','#ff6b6b'];
-  const col = ORBITAL_COLORS[(p.orbital - 1) % ORBITAL_COLORS.length];
-  return entities.map(e => {
-    let s = null;
-    for (let t = 0; t < stepsPerFrame; t++) s = sampleOrbital(p.orbital, p.scale);
-    if (!s) return e;
-    const brightness = Math.round(40 + s.prob * 200);
-    const r = parseInt(col.slice(1,3),16);
-    const g = parseInt(col.slice(3,5),16);
-    const b = parseInt(col.slice(5,7),16);
-    const br = Math.min(255, Math.round(r * brightness/140));
-    const bg = Math.min(255, Math.round(g * brightness/140));
-    const bb = Math.min(255, Math.round(b * brightness/140));
-    return { ...e, orb: p.orbital, x: cx + s.x, y: cy + s.y, color: \`rgb(\${br},\${bg},\${bb})\` };
+function copyToClipboard(text){
+  navigator.clipboard.writeText(text).then(()=>showToast('Link copied to clipboard!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Link copied!');
   });
-}`},
+}
 
-predator: { name:'Predator-Prey', icon:'🦊', desc:'Lotka-Volterra ecology — rabbits and foxes with birth, death, and predation dynamics.', category:'ecology', tag:'preset',
-  details: {
-    concepts: ['Lotka-Volterra equations', 'Population dynamics', 'Predator-prey cycles', 'Carrying capacity', 'Ecosystem stability'],
-    objectives: [
-      'Observe population oscillations between predator and prey',
-      'Understand why populations cycle out of phase',
-      'See how changing birth/death rates affects stability',
-      'Connect to real ecosystems: lynx-hare cycles, pest control'
-    ],
-    curriculum: 'Ecology, Biology, Differential Equations',
-    tips: [
-      '<strong>Try this:</strong> Find slider values that give sustained oscillation. Then set fox deathRate to 0 — watch rabbits overpopulate and crash.',
-      '<strong>Key insight:</strong> More rabbits → more foxes → fewer rabbits → fewer foxes → more rabbits. The cycle continues!',
-      '<strong>Extension:</strong> Add a third species (e.g., eagles that eat foxes). How does the food chain change?'
-    ]
-  },
-  code:`// Predator-Prey — Lotka-Volterra
-function defineParameters() {
-  return [
-    { name: "birthRateRabbit", type: "slider", min: 0.001, max: 0.02, default: 0.006, step: 0.001 },
-    { name: "deathRateRabbit", type: "slider", min: 0.001, max: 0.02, default: 0.006, step: 0.001 },
-    { name: "birthRateFox",    type: "slider", min: 0.001, max: 0.01, default: 0.003, step: 0.001 },
-    { name: "deathRateFox",    type: "slider", min: 0.001, max: 0.02, default: 0.008, step: 0.001 },
-    { name: "visionRadius",    type: "slider", min: 20,   max: 120,  default: 60,    step: 5 }
-  ];
-}
-function init(p) {
-  const entities = [];
-  for (let i = 0; i < 80; i++) {
-    const a = Math.random()*Math.PI*2;
-    entities.push({
-      id: Math.random(), type: 'rabbit',
-      x: Math.random()*760+20, y: Math.random()*510+20,
-      vx: Math.cos(a)*1.2, vy: Math.sin(a)*1.2,
-      radius: 5, shape: 'circle', color: '#e8e8f0',
-      energy: 80 + Math.random()*40, age: 0
-    });
+// ═══════════════════════════════════════════════════════
+// ROUTING — parse URL on load
+// ═══════════════════════════════════════════════════════
+async function handleRoute(){
+  const path=location.pathname;
+  const slugMatch=path.match(/^\/s\/([a-z0-9]+)$/);
+  if(slugMatch){
+    await loadSimulationBySlug(slugMatch[1]);
+    return;
   }
-  for (let i = 0; i < 15; i++) {
-    const a = Math.random()*Math.PI*2;
-    entities.push({
-      id: Math.random(), type: 'fox',
-      x: Math.random()*760+20, y: Math.random()*510+20,
-      vx: Math.cos(a)*1.6, vy: Math.sin(a)*1.6,
-      radius: 8, shape: 'triangle', color: '#f5832a',
-      energy: 100 + Math.random()*50, age: 0, angle: a
-    });
-  }
-  return entities;
-}
-function update(entities, p) {
-  const W = 800, H = 550;
-  const rabbits = entities.filter(e => e.type === 'rabbit');
-  const foxes = entities.filter(e => e.type === 'fox');
-  const newEntities = [];
-  rabbits.forEach(e => {
-    let { x, y, vx, vy, energy, age } = e;
-    age++;
-    let flee = null, fleeD = p.visionRadius;
-    foxes.forEach(f => {
-      const dx=f.x-x, dy=f.y-y, d=Math.sqrt(dx*dx+dy*dy);
-      if (d < fleeD) { flee=f; fleeD=d; }
-    });
-    if (flee) {
-      const dx=x-flee.x, dy=y-flee.y, d=Math.sqrt(dx*dx+dy*dy)||1;
-      vx += (dx/d)*0.3; vy += (dy/d)*0.3;
-    } else { vx += (Math.random()-0.5)*0.3; vy += (Math.random()-0.5)*0.3; }
-    const spd = Math.sqrt(vx*vx+vy*vy)||1;
-    if (spd > 1.8) { vx=(vx/spd)*1.8; vy=(vy/spd)*1.8; }
-    x += vx; y += vy;
-    if (x<5){x=5;vx=Math.abs(vx);} if (x>W-5){x=W-5;vx=-Math.abs(vx);}
-    if (y<5){y=5;vy=Math.abs(vy);} if (y>H-5){y=H-5;vy=-Math.abs(vy);}
-    energy -= 0.15; energy = Math.min(energy + 0.08, 150);
-    if (energy <= 0) return;
-    const ne = { ...e, x, y, vx, vy, energy, age };
-    if (energy > 120 && Math.random() < p.birthRateRabbit) {
-      const a = Math.random()*Math.PI*2;
-      newEntities.push({ ...ne, id:Math.random(), x:x+Math.random()*10-5, y:y+Math.random()*10-5,
-        vx:Math.cos(a)*1.2, vy:Math.sin(a)*1.2, energy:60, age:0 });
-      ne.energy = 70;
+  
+  const hash=location.hash.slice(1);
+  if(!hash){goHome();return;}
+  const parts=hash.split('/');
+  const type=parts[0];
+  if(type==='sim'&&parts[1]){
+    for(const[catKey,cat] of Object.entries(CATALOGUE)){
+      if(cat.sims[parts[1]]){openSim(catKey,parts[1],false);return;}
     }
-    newEntities.push(ne);
-  });
-  foxes.forEach(e => {
-    let { x, y, vx, vy, energy, age } = e;
-    age++;
-    let prey = null, preyD = p.visionRadius;
-    rabbits.forEach(r => {
-      const dx=r.x-x, dy=r.y-y, d=Math.sqrt(dx*dx+dy*dy);
-      if (d < preyD) { prey=r; preyD=d; }
+  }
+  if(type==='share'&&parts[1]){
+    const code=decodeShare(parts.slice(1).join('/'));
+    if(code){
+      openEditor({name:'Shared Simulation',icon:'🔗',desc:'Shared via link.',concepts:[],objectives:[],params:[],code,isCustom:true},'custom','shared',true);return;
+    }
+  }
+  if(type==='custom'&&parts[1]){
+    const lib=getLib();
+    const sim=lib[parts[1]];
+    if(sim){openEditorFromCustom(parts[1]);return;}
+  }
+  goHome();
+}
+
+window.addEventListener('hashchange', handleRoute);
+window.addEventListener('popstate', handleRoute);
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+let activeCat='all';
+function goHome(){
+  stopLoop();isPlaying=false;playBtn.innerHTML='▶';playBtn.classList.remove('playing');
+  document.getElementById('home').style.display='flex';
+  document.getElementById('editor').style.display='none';
+  document.getElementById('sim-breadcrumb').style.display='none';
+  document.getElementById('nav-arrows').style.display='none';
+  document.getElementById('lib-toggle-btn').style.display='none';
+  document.getElementById('fps-badge').style.display='none';
+  document.getElementById('new-sim-btn-top').style.display='';
+  history.pushState(null,'',location.pathname);
+  renderHome();
+}
+
+function openSim(catKey,simKey,pushHistory=true){
+  const cat=CATALOGUE[catKey];
+  if(!cat)return;
+  const sim=cat.sims[simKey];
+  if(!sim)return;
+  simIndex=buildIndex();
+  currentIndexPos=simIndex.findIndex(s=>s.catKey===catKey&&s.simKey===simKey);
+  openEditor(sim,catKey,simKey,pushHistory);
+}
+
+function openEditorFromCustom(id,pushHistory=true){
+  const lib=getLib();
+  const sim=lib[id];
+  if(!sim)return;
+  simIndex=buildIndex();
+  currentIndexPos=simIndex.findIndex(s=>s.simKey===id&&s.isCustom);
+  openEditor(sim,'custom',id,pushHistory);
+}
+
+function openEditor(sim,catKey,simKey,pushHistory=true){
+  closeDrawer();
+  document.getElementById('home').style.display='none';
+  document.getElementById('editor').style.display='flex';
+  document.getElementById('sim-breadcrumb').style.display='flex';
+  document.getElementById('nav-arrows').style.display='flex';
+  document.getElementById('lib-toggle-btn').style.display='';
+  document.getElementById('fps-badge').style.display='';
+  document.getElementById('new-sim-btn-top').style.display='none';
+
+  const cat=CATALOGUE[catKey]||{label:'My Simulations',icon:'📁'};
+  document.getElementById('bc-cat').textContent=cat.icon+' '+cat.label;
+  document.getElementById('bc-name').textContent=sim.name;
+
+  currentSimMeta={catKey,simKey,sim,isCustom:sim.isCustom||catKey==='custom'};
+
+  codeEditor.value=sim.code||'';
+  clearConsoles(); setStatus('idle');
+  resizeCanvas();
+  ctx.fillStyle=canvasBg; ctx.fillRect(0,0,canvasW,canvasH);
+  canvasOverlay.style.display='';
+  frame=0;frameCounter.textContent='frame 0';
+  entities=[];paramDefs=[];paramValues={};compiledInit=null;compiledUpdate=null;
+  paramsInner.innerHTML='<span class="params-empty">No parameters yet.</span>';
+  renderAboutPanel(sim,catKey,simKey);
+  switchTab('code');
+  updateNavArrows();
+
+  if(pushHistory){
+    if(currentSimSlug)history.replaceState(null,'','/s/'+currentSimSlug);
+    else if(catKey==='custom')history.pushState(null,'',location.pathname+'#custom/'+simKey);
+    else history.pushState(null,'',location.pathname+'#sim/'+simKey);
+  }
+}
+
+function newSim(){
+  simIndex=buildIndex();currentIndexPos=-1;
+  const blankSim={name:'Untitled',icon:'🔬',desc:'',concepts:[],objectives:[],params:[],code:BLANK_CODE,isCustom:true};
+  currentSimMeta={catKey:'custom',simKey:null,sim:blankSim,isCustom:true};
+  closeDrawer();
+  document.getElementById('home').style.display='none';
+  document.getElementById('editor').style.display='flex';
+  document.getElementById('sim-breadcrumb').style.display='flex';
+  document.getElementById('nav-arrows').style.display='none';
+  document.getElementById('lib-toggle-btn').style.display='';
+  document.getElementById('fps-badge').style.display='';
+  document.getElementById('new-sim-btn-top').style.display='none';
+  document.getElementById('bc-cat').textContent='📁 My Simulations';
+  document.getElementById('bc-name').textContent='Untitled';
+  codeEditor.value=BLANK_CODE;
+  clearConsoles();setStatus('idle');resizeCanvas();
+  ctx.fillStyle=canvasBg;ctx.fillRect(0,0,canvasW,canvasH);
+  canvasOverlay.style.display='';
+  frame=0;frameCounter.textContent='frame 0';
+  entities=[];paramDefs=[];paramValues={};compiledInit=null;compiledUpdate=null;
+  paramsInner.innerHTML='<span class="params-empty">No parameters yet.</span>';
+  renderAboutPanel(blankSim,'custom',null);
+  switchTab('code');
+}
+
+function navSim(dir){
+  if(simIndex.length===0)return;
+  let next=currentIndexPos+dir;
+  if(next<0)next=simIndex.length-1;
+  if(next>=simIndex.length)next=0;
+  currentIndexPos=next;
+  const entry=simIndex[next];
+  if(entry.isCustom)openEditorFromCustom(entry.simKey);
+  else openSim(entry.catKey,entry.simKey);
+}
+
+function updateNavArrows(){
+  const arr=document.getElementById('nav-arrows');
+  arr.style.display=simIndex.length>1?'flex':'none';
+}
+
+// ═══════════════════════════════════════════════════════
+// HOME RENDER
+// ═══════════════════════════════════════════════════════
+const CAT_COLORS={physics:'#4a9eff',chemistry:'#3ecf8e',biology:'#ff6b6b',mathematics:'#f5a623',custom:'#cc5de8'};
+
+function renderHome(){
+  const q=(document.getElementById('home-search').value||'').toLowerCase();
+  // Category filter chips
+  const cf=document.getElementById('cat-filter');
+  if(!cf.children.length){
+    const allChip=document.createElement('span');allChip.className='cat-chip active';allChip.textContent='All';
+    allChip.style.background=activeCat==='all'?'#555':'';
+    allChip.onclick=()=>{activeCat='all';renderHome();};cf.appendChild(allChip);
+    Object.entries(CATALOGUE).forEach(([key,cat])=>{
+      const chip=document.createElement('span');chip.className='cat-chip';chip.textContent=cat.icon+' '+cat.label;
+      chip.dataset.cat=key;chip.onclick=()=>{activeCat=key;renderHome();};cf.appendChild(chip);
     });
-    if (prey) {
-      const dx=prey.x-x, dy=prey.y-y, d=Math.sqrt(dx*dx+dy*dy)||1;
-      vx += (dx/d)*0.35; vy += (dy/d)*0.35;
-      if (d < 12) {
-        energy += 60;
-        const ri = rabbits.indexOf(prey);
-        if (ri > -1) rabbits.splice(ri, 1);
-        const ni = newEntities.findIndex(n => n.id === prey.id);
-        if (ni > -1) newEntities.splice(ni, 1);
+    const custChip=document.createElement('span');custChip.className='cat-chip';custChip.textContent='📁 My Simulations';
+    custChip.dataset.cat='custom';custChip.onclick=()=>{activeCat='custom';renderHome();};cf.appendChild(custChip);
+  }
+  cf.querySelectorAll('.cat-chip').forEach(c=>{
+    const isActive=(c.dataset.cat||'all')===activeCat||(!c.dataset.cat&&activeCat==='all');
+    c.classList.toggle('active',isActive);
+    c.style.background=isActive?(CAT_COLORS[c.dataset.cat]||'#555'):'';
+    c.style.color=isActive?'#fff':'';
+    c.style.borderColor=isActive?'transparent':'';
+  });
+
+  const container=document.getElementById('home-sims');container.innerHTML='';
+
+  // Presets
+  const lib=getLib();
+  const allCats=[
+    ...Object.entries(CATALOGUE).map(([k,v])=>({key:k,cat:v,sims:Object.entries(v.sims).map(([sk,s])=>({sk,s,isCustom:false})),isCustom:false})),
+    {key:'custom',cat:{label:'My Simulations',icon:'📁'},sims:Object.entries(lib).map(([id,s])=>({sk:id,s,isCustom:true})),isCustom:true}
+  ];
+
+  allCats.forEach(({key,cat,sims,isCustom})=>{
+    if(activeCat!=='all'&&activeCat!==key)return;
+    const filtered=sims.filter(({sk,s})=>!q||s.name.toLowerCase().includes(q)||s.desc?.toLowerCase().includes(q));
+    if(key==='custom'&&filtered.length===0&&activeCat!=='custom')return;
+
+    const sec=document.createElement('div');sec.className='cat-section';
+    const hdr=document.createElement('div');hdr.className='cat-header';
+    hdr.innerHTML=`<span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.label}</span><span class="cat-count">${filtered.length} simulation${filtered.length!==1?'s':''}</span>`;
+    sec.appendChild(hdr);
+    const grid=document.createElement('div');grid.className='sim-grid';
+
+    filtered.forEach(({sk,s,isCustom:ic})=>{
+      const card=document.createElement('div');card.className='sim-card';
+      card.innerHTML=`<div class="sim-card-icon">${s.icon||'🔬'}</div>
+        <div class="sim-card-name">${s.name}</div>
+        <div class="sim-card-desc">${s.desc||''}</div>
+        <div class="sim-card-tag ${ic?'tag-custom':'tag-preset'}">${ic?'custom':'preset'}</div>
+        ${ic?`<button class="sim-card-shared" title="Copy share link">🔗</button><button class="sim-card-del" title="Delete">✕</button>`:''}`;
+      card.onclick=()=>ic?openEditorFromCustom(sk):openSim(key,sk);
+      if(ic){
+        card.querySelector('.sim-card-del').onclick=e=>{e.stopPropagation();if(confirm('Delete?')){const l=getLib();delete l[sk];saveLib(l);renderHome();}};
+        card.querySelector('.sim-card-shared').onclick=e=>{e.stopPropagation();const url=getShareUrl('custom_saved',sk,s.code);if(url)copyToClipboard(url);};
       }
-    } else { vx += (Math.random()-0.5)*0.4; vy += (Math.random()-0.5)*0.4; }
-    const spd=Math.sqrt(vx*vx+vy*vy)||1;
-    if (spd>2.2){vx=(vx/spd)*2.2;vy=(vy/spd)*2.2;}
-    x+=vx; y+=vy;
-    if (x<5){x=5;vx=Math.abs(vx);} if (x>W-5){x=W-5;vx=-Math.abs(vx);}
-    if (y<5){y=5;vy=Math.abs(vy);} if (y>H-5){y=H-5;vy=-Math.abs(vy);}
-    energy -= 0.3;
-    if (energy <= 0) return;
-    const energyRatio = Math.min(energy/150, 1);
-    const ne = { ...e, x, y, vx, vy, energy, age, angle: Math.atan2(vy,vx),
-      color: \`hsl(\${25 + energyRatio*15}, 85%, \${35+energyRatio*20}%)\` };
-    if (energy > 140 && Math.random() < p.birthRateFox) {
-      const a = Math.random()*Math.PI*2;
-      newEntities.push({ ...ne, id:Math.random(), x:x+Math.random()*10-5, y:y+Math.random()*10-5,
-        vx:Math.cos(a)*1.6, vy:Math.sin(a)*1.6, energy:80, age:0 });
-      ne.energy = 80;
-    }
-    newEntities.push(ne);
-  });
-  return newEntities.length > 0 ? newEntities : init(p);
-}`},
+      grid.appendChild(card);
+    });
 
-efield: { name:'Electric Fields', icon:'🧲', desc:'Visualize electric field lines from point charges — superposition of Coulomb forces.', category:'physics', tag:'preset',
-  details: {
-    concepts: ['Coulomb\'s law', 'Electric field', 'Superposition', 'Field lines', 'Point charges'],
-    objectives: [
-      'Visualize how electric field lines form around charges',
-      'Understand superposition: fields add as vectors',
-      'See how field strength relates to line density',
-      'Explore dipole, monopole, and multipole configurations'
-    ],
-    curriculum: 'Physics (Electrostatics)',
-    tips: [
-      '<strong>Try this:</strong> Start with charge1=+3, charge2=-3 — classic dipole field. Then make both positive and see repulsion.',
-      '<strong>Key insight:</strong> Where lines are dense, the field is strong. Where they spread out, it\'s weak.',
-      '<strong>Extension:</strong> Set charge3 to a large positive value between two negatives — find the null point where field is zero.'
-    ]
-  },
-  code:`// Electric Field Visualization
-function defineParameters() {
-  return [
-    { name: "charge1",    type: "slider", min: -5, max: 5,   default: 3,   step: 0.5 },
-    { name: "charge2",    type: "slider", min: -5, max: 5,   default: -3,  step: 0.5 },
-    { name: "charge3",    type: "slider", min: -5, max: 5,   default: 0,   step: 0.5 },
-    { name: "tracers",    type: "slider", min: 20, max: 300, default: 120, step: 10 },
-    { name: "trailLen",   type: "slider", min: 5,  max: 60,  default: 25,  step: 5 }
+    // New card (custom only)
+    if(key==='custom'||(activeCat==='custom')){
+      const nc=document.createElement('div');nc.className='sim-card new-card';
+      nc.innerHTML='<div class="new-card-icon">＋</div><div class="new-card-label">New simulation</div>';
+      nc.onclick=newSim;grid.appendChild(nc);
+    }
+    sec.appendChild(grid);container.appendChild(sec);
+  });
+}
+
+function scrollToSims(){document.getElementById('home-sims').scrollIntoView({behavior:'smooth'});}
+
+// ═══════════════════════════════════════════════════════
+// DRAWER
+// ═══════════════════════════════════════════════════════
+function toggleDrawer(){
+  const d=document.getElementById('lib-drawer');
+  const ov=document.getElementById('lib-overlay');
+  const isOpen=d.classList.contains('open');
+  if(isOpen){closeDrawer();}else{d.classList.add('open');ov.classList.add('open');renderDrawer();}
+}
+function closeDrawer(){
+  document.getElementById('lib-drawer').classList.remove('open');
+  document.getElementById('lib-overlay').classList.remove('open');
+}
+function renderDrawer(){
+  const q=(document.getElementById('drawer-search').value||'').toLowerCase();
+  const body=document.getElementById('drawer-body');body.innerHTML='';
+  const allCats=[
+    ...Object.entries(CATALOGUE).map(([k,v])=>({key:k,cat:v,sims:Object.entries(v.sims).map(([sk,s])=>({sk,s,isCustom:false}))})),
+    {key:'custom',cat:{label:'My Simulations',icon:'📁'},sims:Object.entries(getLib()).map(([id,s])=>({sk:id,s,isCustom:true}))}
   ];
-}
-function chargeColor(q) {
-  if (q === 0) return '#555566';
-  return q > 0 ? \`hsl(10, 90%, \${30+Math.abs(q)*8}%)\` : \`hsl(210, 90%, \${30+Math.abs(q)*8}%)\`;
-}
-function init(p) {
-  const entities = [];
-  entities.push({ id:'C1', type:'charge', x:220, y:275, q:p.charge1, shape:'circle', radius:14, color:chargeColor(p.charge1), label: p.charge1>0?'+':'−' });
-  entities.push({ id:'C2', type:'charge', x:580, y:275, q:p.charge2, shape:'circle', radius:14, color:chargeColor(p.charge2), label: p.charge2>0?'+':'−' });
-  entities.push({ id:'C3', type:'charge', x:400, y:160, q:p.charge3, shape:'circle', radius:14, color:chargeColor(p.charge3), label: p.charge3>0?'+':'−' });
-  for (let i = 0; i < p.tracers; i++) {
-    entities.push({
-      id: 'T'+i, type:'tracer',
-      x: Math.random()*720+40, y: Math.random()*470+40,
-      vx: 0, vy: 0, radius: 2, shape:'circle',
-      color:'rgba(255,255,255,0.6)', trail: []
+  allCats.forEach(({key,cat,sims})=>{
+    const filtered=sims.filter(({s})=>!q||s.name.toLowerCase().includes(q));
+    if(filtered.length===0&&q)return;
+    const dc=document.createElement('div');dc.className='drawer-cat';
+    const dch=document.createElement('div');dch.className='drawer-cat-header';
+    dch.innerHTML=`<span class="drawer-cat-icon">${cat.icon}</span><span class="drawer-cat-name">${cat.label}</span><span class="drawer-cat-count">${filtered.length}</span><span class="drawer-cat-chevron">▾</span>`;
+    dch.onclick=()=>dc.classList.toggle('collapsed');
+    dc.appendChild(dch);
+    const list=document.createElement('div');list.className='drawer-sim-list';
+    filtered.forEach(({sk,s,isCustom})=>{
+      const ds=document.createElement('div');ds.className='drawer-sim';
+      const isActive=currentSimMeta&&currentSimMeta.simKey===sk;
+      if(isActive)ds.classList.add('active');
+      ds.innerHTML=`<span class="drawer-sim-icon">${s.icon||'🔬'}</span><div class="drawer-sim-info"><div class="drawer-sim-name">${s.name}</div></div>`;
+      ds.onclick=()=>isCustom?openEditorFromCustom(sk):openSim(key,sk);
+      list.appendChild(ds);
     });
-  }
-  return entities;
-}
-function update(entities, p) {
-  const charges = entities.filter(e => e.type === 'charge');
-  const tracers = entities.filter(e => e.type === 'tracer');
-  const newCharges = charges.map((c, i) => {
-    const q = [p.charge1, p.charge2, p.charge3][i];
-    return { ...c, q, color: chargeColor(q), label: q>0?'+': q<0?'−':'·' };
+    dc.appendChild(list);body.appendChild(dc);
   });
-  const newTracers = tracers.map(e => {
-    let fx = 0, fy = 0;
-    newCharges.forEach(c => {
-      if (c.q === 0) return;
-      const dx = e.x - c.x, dy = e.y - c.y;
-      const r2 = dx*dx + dy*dy;
-      const r = Math.sqrt(r2) || 1;
-      if (r < c.radius + 2) return;
-      const force = c.q / (r2 + 200);
-      fx += (dx/r) * force; fy += (dy/r) * force;
-    });
-    const fmag = Math.sqrt(fx*fx+fy*fy) || 1;
-    const speed = 2.5;
-    let nx = e.x + (fx/fmag)*speed;
-    let ny = e.y + (fy/fmag)*speed;
-    const nearCharge = newCharges.some(c => {
-      const dx=nx-c.x, dy=ny-c.y;
-      return Math.sqrt(dx*dx+dy*dy) < c.radius+4;
-    });
-    if (nx<2||nx>798||ny<2||ny>548||nearCharge) {
-      nx = Math.random()*720+40; ny = Math.random()*470+40;
-      return { ...e, x:nx, y:ny, trail:[] };
-    }
-    const trail = [...(e.trail||[]), {x:e.x, y:e.y}].slice(-p.trailLen);
-    const logF = Math.min(Math.log(fmag*500+1)/6, 1);
-    const hue = 200 - logF*160;
-    return { ...e, x:nx, y:ny, trail, color:\`hsla(\${hue},80%,65%,0.7)\` };
-  });
-  return [...newCharges, ...newTracers];
-}`}
-};
+}
 
-const BLANK_CODE = `// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// ABOUT PANEL
+// ═══════════════════════════════════════════════════════
+function renderAboutPanel(sim,catKey,simKey){
+  const panel=document.getElementById('about-panel');
+  const cat=CATALOGUE[catKey]||{label:'My Simulations',icon:'📁',color:'#cc5de8'};
+  const color=cat.color||CAT_COLORS[catKey]||'#7c6af7';
+  const isPreset=!sim.isCustom&&catKey!=='custom';
+  const shareUrl=isPreset
+    ?getShareUrl('preset',simKey,sim.code)
+    :simKey?getShareUrl('custom_saved',simKey,sim.code):getShareUrl('share',null,sim.code||codeEditor.value);
+
+  const concepts=(sim.concepts||[]).map(c=>`<span class="concept-chip">${c}</span>`).join('');
+  const objectives=(sim.objectives||[]).map(o=>`<li style="font-size:11.5px;color:var(--text2);line-height:1.6;margin-bottom:3px">${o}</li>`).join('');
+  const params=(sim.params||[]).map(p=>`<div class="param-doc"><span class="param-doc-name">${p.n}</span><span class="param-doc-desc">${p.d}</span></div>`).join('');
+
+  panel.innerHTML=`
+    <div class="about-badge" style="background:${color}22;border:1px solid ${color}44;color:${color}">${cat.icon} ${cat.label}</div>
+    <div class="about-title">${sim.icon||'🔬'} ${sim.name}</div>
+    ${sim.desc?`<div class="about-desc">${sim.desc}</div>`:''}
+    ${concepts?`<div class="about-section"><h4>Key Concepts</h4><div>${concepts}</div></div>`:''}
+    ${objectives?`<div class="about-section"><h4>Learning Objectives</h4><ul style="padding-left:14px">${objectives}</ul></div>`:''}
+    ${params?`<div class="about-section"><h4>Parameter Guide</h4>${params}</div>`:''}
+    <div class="about-share">
+      <h4>Share this simulation</h4>
+      <div class="share-url" onclick="copyToClipboard('${shareUrl||''}')" title="Click to copy">${shareUrl?shareUrl.substring(0,60)+(shareUrl.length>60?'…':''):'Code too large to share via URL — save it first'}</div>
+      <div class="share-row">
+        <button class="share-btn" onclick="copyToClipboard('${shareUrl||''}')">📋 Copy link</button>
+        <button class="share-btn" onclick="shareCode()">📤 Share code</button>
+      </div>
+    </div>`;
+}
+
+function shareCode(){
+  const url=getShareUrl('share',null,codeEditor.value);
+  if(url){copyToClipboard(url);}
+  else{showToast('Code is too large — save it first, then share the library link');}
+}
+
+// ═══════════════════════════════════════════════════════
+// SAVE MODAL
+// ═══════════════════════════════════════════════════════
+let currentSimMeta=null;
+
+function openSaveModal(){
+  document.getElementById('modal-name').value=currentSimMeta?.sim?.name||'';
+  document.getElementById('modal-cat').value=currentSimMeta?.catKey==='custom'?'custom':'custom';
+  document.getElementById('modal-desc').value=currentSimMeta?.sim?.desc||'';
+  document.getElementById('modal-obj').value=(currentSimMeta?.sim?.objectives||[]).join('\n');
+  document.getElementById('modal-icon').value=currentSimMeta?.sim?.icon||'🔬';
+  document.getElementById('save-modal').classList.add('open');
+}
+function closeSaveModal(){document.getElementById('save-modal').classList.remove('open');}
+async function saveSimulation(){
+  const name=document.getElementById('modal-name').value.trim()||'Untitled';
+  const desc=document.getElementById('modal-desc').value.trim();
+  const objText=document.getElementById('modal-obj').value.trim();
+  const objectives=objText?objText.split('\n').filter(Boolean):[];
+  const icon=document.getElementById('modal-icon').value.trim()||'🔬';
+  
+  if(!currentUser){
+    showToast('Please sign in to save to cloud');
+    const lib=getLib();
+    const id=currentSimMeta?.simKey&&currentSimMeta?.isCustom?currentSimMeta.simKey:'sim_'+Date.now();
+    lib[id]={name,desc,icon,objectives,code:codeEditor.value,saved:Date.now()};
+    saveLib(lib);
+    if(currentSimMeta)currentSimMeta.simKey=id;
+    document.getElementById('bc-name').textContent=name;
+    closeSaveModal();
+    renderAboutPanel({...currentSimMeta?.sim,name,desc,icon,objectives,isCustom:true},'custom',id);
+    return;
+  }
+  
+  try{
+    if(currentSimId){
+      const{error}=await supabaseClient.from('simulations').update({name,description:desc,icon,code:codeEditor.value,updated_at:new Date().toISOString()}).eq('id',currentSimId);
+      if(error)throw error;
+      showToast('Updated: '+name);
+    }else{
+      const slug=Math.random().toString(36).substring(2,10);
+      const{data,error}=await supabaseClient.from('simulations').insert({slug,name,description:desc,icon,code:codeEditor.value,author_id:currentUser.id,is_public:true}).select().single();
+      if(error)throw error;
+      currentSimId=data.id;
+      currentSimSlug=data.slug;
+      showToast('Saved: '+name);
+      history.replaceState(null,'','/s/'+slug);
+    }
+    const lib=getLib();
+    const id=currentSimMeta?.simKey&&currentSimMeta?.isCustom?currentSimMeta.simKey:'sim_'+Date.now();
+    lib[id]={name,desc,icon,objectives,code:codeEditor.value,saved:Date.now()};
+    saveLib(lib);
+    if(currentSimMeta)currentSimMeta.simKey=id;
+    document.getElementById('bc-name').textContent=name;
+    closeSaveModal();
+    renderAboutPanel({...currentSimMeta?.sim,name,desc,icon,objectives,isCustom:true},'custom',id);
+  }catch(e){
+    showToast('Save failed: '+e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ENGINE
+// ═══════════════════════════════════════════════════════
+let entities=[],paramDefs=[],paramValues={};
+let compiledUpdate=null,compiledInit=null;
+let rafId=null,isPlaying=false,frame=0;
+let lastTime=0,fpsFrames=0,fpsTime=0;
+let canvasW=800,canvasH=550,targetFps=60;
+let trailEnabled=true,canvasBg='#090a0d';
+
+const canvas=document.getElementById('sim-canvas');
+const ctx=canvas.getContext('2d');
+const codeEditor=document.getElementById('code-editor');
+const errorConsole=document.getElementById('error-console');
+const okConsole=document.getElementById('ok-console');
+const paramsInner=document.getElementById('params-inner');
+const playBtn=document.getElementById('play-btn');
+const frameCounter=document.getElementById('frame-counter');
+const fpsDisplay=document.getElementById('fps-badge');
+const statusBadge=document.getElementById('sim-status');
+const canvasOverlay=document.getElementById('canvas-overlay');
+
+function resizeCanvas(){
+  canvas.width=canvasW;canvas.height=canvasH;
+  const wrap=document.getElementById('canvas-wrap');
+  const scale=Math.min((wrap.clientWidth-12)/canvasW,(wrap.clientHeight-12)/canvasH,1);
+  canvas.style.width=(canvasW*scale)+'px';canvas.style.height=(canvasH*scale)+'px';
+}
+window.addEventListener('resize',resizeCanvas);
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['code','about','guide','settings'][i]===tab));
+  document.getElementById('editor-wrap').style.display=tab==='code'?'flex':'none';
+  document.getElementById('about-panel').style.display=tab==='about'?'block':'none';
+  document.getElementById('guide-panel').style.display=tab==='guide'?'block':'none';
+  document.getElementById('settings-panel').style.display=tab==='settings'?'flex':'none';
+}
+
+function applySettings(){
+  canvasW=parseInt(document.getElementById('set-cw').value)||800;
+  canvasH=parseInt(document.getElementById('set-ch').value)||550;
+  targetFps=parseInt(document.getElementById('set-fps').value)||60;
+  trailEnabled=document.getElementById('set-trail').checked;
+  canvasBg=document.getElementById('set-bg').value;
+  resizeCanvas();if(compiledInit)doReset();
+}
+function setStatus(s){statusBadge.className='status-'+s;statusBadge.textContent={idle:'idle',run:'running',pause:'paused',error:'error'}[s]||s;}
+function showError(msg){errorConsole.textContent='⚠ '+msg;errorConsole.classList.add('visible');okConsole.classList.remove('visible');setStatus('error');}
+function showOk(msg){okConsole.textContent='✓ '+msg;okConsole.classList.add('visible');errorConsole.classList.remove('visible');setTimeout(()=>okConsole.classList.remove('visible'),2500);}
+function clearConsoles(){errorConsole.classList.remove('visible');okConsole.classList.remove('visible');}
+
+function compileAndRun(){
+  clearConsoles();
+  try{
+    const fn=new Function(codeEditor.value+'\nreturn{defineParameters,init,update};');
+    const api=fn();
+    if(typeof api.defineParameters!=='function')throw new Error('defineParameters() not found');
+    if(typeof api.init!=='function')throw new Error('init() not found');
+    if(typeof api.update!=='function')throw new Error('update() not found');
+    paramDefs=api.defineParameters();compiledInit=api.init;compiledUpdate=api.update;
+    buildParamControls();doReset();
+    showOk('Compiled — '+entities.length+' entities');
+    canvasOverlay.style.display='none';
+  }catch(e){showError(e.message);compiledInit=null;compiledUpdate=null;}
+}
+
+function buildParamControls(){
+  paramsInner.innerHTML='';paramValues={};
+  if(!paramDefs.length){paramsInner.innerHTML='<span class="params-empty">No parameters defined.</span>';return;}
+  paramDefs.forEach(def=>{
+    paramValues[def.name]=def.default;
+    const g=document.createElement('div');g.className='param-group';
+    const lbl=document.createElement('span');lbl.className='param-label';lbl.textContent=def.name;g.appendChild(lbl);
+    if(def.type==='slider'){
+      const inp=document.createElement('input');inp.type='range';inp.min=def.min;inp.max=def.max;inp.step=def.step||0.01;inp.value=def.default;
+      const val=document.createElement('span');val.className='param-value';val.textContent=fmtV(def.default);
+      inp.oninput=()=>{paramValues[def.name]=parseFloat(inp.value);val.textContent=fmtV(parseFloat(inp.value));};
+      g.appendChild(inp);g.appendChild(val);
+    }else if(def.type==='number'){
+      const inp=document.createElement('input');inp.type='number';inp.min=def.min;inp.max=def.max;inp.value=def.default;
+      inp.onchange=()=>{paramValues[def.name]=parseFloat(inp.value);};g.appendChild(inp);
+    }else if(def.type==='checkbox'){
+      const inp=document.createElement('input');inp.type='checkbox';inp.checked=!!def.default;paramValues[def.name]=!!def.default;
+      inp.onchange=()=>{paramValues[def.name]=inp.checked;};g.appendChild(inp);
+    }
+    paramsInner.appendChild(g);
+  });
+}
+function fmtV(v){if(Number.isInteger(v))return v+'';if(Math.abs(v)<0.01)return v.toFixed(3);if(Math.abs(v)<1)return v.toFixed(2);return v.toFixed(1);}
+
+function doReset(){
+  if(!compiledInit)return;
+  stopLoop();isPlaying=false;playBtn.innerHTML='▶';playBtn.classList.remove('playing');
+  try{entities=compiledInit({...paramValues});frame=0;frameCounter.textContent='frame 0';setStatus('idle');renderFrame();}
+  catch(e){showError('init() error: '+e.message);}
+}
+
+function renderFrame(){
+  ctx.fillStyle=trailEnabled?canvasBg+'cc':canvasBg;ctx.fillRect(0,0,canvasW,canvasH);
+  entities.forEach(e=>{
+    if(!e||e.color==='transparent')return;
+    if(e.trail&&e.trail.length>1){ctx.beginPath();ctx.moveTo(e.trail[0].x,e.trail[0].y);for(let i=1;i<e.trail.length;i++)ctx.lineTo(e.trail[i].x,e.trail[i].y);ctx.strokeStyle=e.color;ctx.globalAlpha=0.25;ctx.lineWidth=1.5;ctx.stroke();ctx.globalAlpha=1;}
+    ctx.fillStyle=e.color;
+    if(e.shape==='rect'){ctx.fillRect(e.x,e.y,e.radius||8,e.height||e.radius||8);}
+    else if(e.shape==='triangle'){const a=e.angle||0,r=e.radius||6;ctx.save();ctx.translate(e.x,e.y);ctx.rotate(a);ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(-r*.6,-r*.5);ctx.lineTo(-r*.6,r*.5);ctx.closePath();ctx.fill();ctx.restore();}
+    else{ctx.beginPath();ctx.arc(e.x,e.y,e.radius||5,0,Math.PI*2);ctx.fill();}
+    if(e.label){ctx.fillStyle='rgba(255,255,255,0.75)';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(e.label,e.x,e.y+(e.radius||5)*0.35);}
+  });
+}
+
+function loop(ts){
+  if(!isPlaying)return;
+  const interval=1000/targetFps,delta=ts-lastTime;
+  if(delta>=interval){lastTime=ts-(delta%interval);fpsFrames++;fpsTime+=delta;if(fpsTime>=500){fpsDisplay.textContent=Math.round(fpsFrames*1000/fpsTime)+' FPS';fpsFrames=0;fpsTime=0;}stepFrame();}
+  rafId=requestAnimationFrame(loop);
+}
+function stepFrame(){
+  if(!compiledUpdate)return;
+  try{entities=compiledUpdate(entities,{...paramValues});frame++;frameCounter.textContent='frame '+frame;renderFrame();setStatus('run');}
+  catch(e){showError('update() error: '+e.message);stopLoop();isPlaying=false;playBtn.innerHTML='▶';playBtn.classList.remove('playing');}
+}
+function stopLoop(){if(rafId){cancelAnimationFrame(rafId);rafId=null;}}
+function togglePlay(){
+  if(!compiledInit){showError('Click ⚡ Compile & Run first');return;}
+  isPlaying=!isPlaying;
+  if(isPlaying){lastTime=performance.now();rafId=requestAnimationFrame(loop);playBtn.innerHTML='⏸';playBtn.classList.add('playing');setStatus('run');}
+  else{stopLoop();playBtn.innerHTML='▶';playBtn.classList.remove('playing');setStatus('pause');}
+}
+function doStep(){
+  if(!compiledUpdate)return;
+  if(isPlaying){isPlaying=false;stopLoop();playBtn.innerHTML='▶';playBtn.classList.remove('playing');}
+  stepFrame();setStatus('pause');
+}
+
+codeEditor.addEventListener('keydown',e=>{
+  if(e.key==='Tab'){e.preventDefault();const s=codeEditor.selectionStart,end=codeEditor.selectionEnd;codeEditor.value=codeEditor.value.substring(0,s)+'  '+codeEditor.value.substring(end);codeEditor.selectionStart=codeEditor.selectionEnd=s+2;}
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();compileAndRun();}
+});
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ═══════════════════════════════════════════════════════
+// BLANK TEMPLATE
+// ═══════════════════════════════════════════════════════
+const BLANK_CODE=`// ──────────────────────────────────────────────────
 // SimForge — New Simulation
-// ─────────────────────────────────────────────
-// You must define three functions:
-//   1. defineParameters()  → controls panel
-//   2. init(params)        → starting entities
-//   3. update(entities, params) → rules per frame
-//
-// Canvas is 800×550. Press Ctrl+Enter to run.
-// ─────────────────────────────────────────────
+// Define 3 functions. Canvas is 800×550. Ctrl+Enter = run.
+// ──────────────────────────────────────────────────
 
 function defineParameters() {
   return [
     { name: "count", type: "slider", min: 10, max: 300, default: 80, step: 5 },
-    { name: "speed", type: "slider", min: 0.2, max: 6,  default: 2,  step: 0.1 }
+    { name: "speed", type: "slider", min: 0.2, max: 6, default: 2, step: 0.1 }
   ];
 }
 
@@ -1261,8 +1086,7 @@ function init(params) {
 function update(entities, params) {
   const W = 800, H = 550;
   return entities.map(e => {
-    let nx = e.x + e.vx;
-    let ny = e.y + e.vy;
+    let nx = e.x + e.vx, ny = e.y + e.vy;
     let nvx = e.vx, nvy = e.vy;
     if (nx < 0 || nx > W) nvx *= -1;
     if (ny < 0 || ny > H) nvy *= -1;
@@ -1270,12 +1094,21 @@ function update(entities, params) {
   });
 }`;
 
-function getLibrary() { try { return JSON.parse(localStorage.getItem('simforge_library')||'{}'); } catch { return {}; } }
-function saveLibrary(lib) { try { localStorage.setItem('simforge_library', JSON.stringify(lib)); } catch {} }
-function getAllSimKeys() { return [...Object.keys(PRESETS), ...Object.keys(getLibrary())]; }
-function getSimCategory(key) { return PRESETS[key] ? (PRESETS[key].category || 'all') : ((getLibrary()[key] || {}).category || 'custom'); }
-function getSimsInCategory(cat) { return cat === 'all' ? getAllSimKeys() : getAllSimKeys().filter(k => getSimCategory(k) === cat); }
 
+// ═══════════════════════════════════════════════════════
+// SUPABASE CONFIGURATION
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://lvyuubnvnkotruzoikjx.supabase.co'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2eXV1Ym52bmtvdHJ1em9pa2p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODcyODYsImV4cCI6MjA5Njg2MzI4Nn0.zHph2tnxfZ8bkQgpHGxH9cot5cNWPIAigFdTwBl3tvE';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let currentSimId = null;
+let currentSimSlug = null;
+
+// ═══════════════════════════════════════════════════════
+// AUTHENTICATION
+// ═══════════════════════════════════════════════════════
 async function initAuth() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   currentUser = session?.user || null;
@@ -1285,357 +1118,165 @@ async function initAuth() {
     renderAuthSection();
   });
 }
+
 function renderAuthSection() {
   const section = document.getElementById('auth-section');
   if (!currentUser) {
-    section.innerHTML = `<button class="topbar-btn" onclick="loginWithGitHub()"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> Sign in</button>`;
+    section.innerHTML = `<button class="tbtn" onclick="loginWithGitHub()"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> Sign in</button>`;
   } else {
     const avatarUrl = currentUser.user_metadata?.avatar_url || '';
     const username = currentUser.user_metadata?.user_name || 'User';
-    section.innerHTML = `<div class="user-menu"><img src="${avatarUrl}" alt="${username}" class="user-avatar" onclick="toggleUserMenu()"><div class="user-dropdown" id="user-dropdown"><div class="dropdown-item" onclick="showMySimulations()"><span>📁</span> My Simulations</div><div class="dropdown-item" onclick="showGallery()"><span>🌐</span> Browse Gallery</div><div class="dropdown-divider"></div><div class="dropdown-item" onclick="logout()"><span></span> Sign out</div></div></div>`;
+    section.innerHTML = `<div class="user-menu"><img src="${avatarUrl}" alt="${username}" class="user-avatar" onclick="toggleUserMenu()"><div class="user-dropdown" id="user-dropdown"><div class="dropdown-item" onclick="showMySimulations()"><span>📁</span> My Simulations</div><div class="dropdown-divider"></div><div class="dropdown-item" onclick="logout()"><span></span> Sign out</div></div></div>`;
   }
 }
-function toggleUserMenu() { document.getElementById('user-dropdown').classList.toggle('open'); }
-document.addEventListener('click', (e) => { const d = document.getElementById('user-dropdown'); if (d && !e.target.closest('.user-menu')) d.classList.remove('open'); });
-async function loginWithGitHub() { await supabaseClient.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin } }); }
-async function logout() { await supabaseClient.auth.signOut(); window.location.href = '/'; }
 
-function goHome() {
-  stopLoop(); isPlaying=false; playBtn.innerHTML='▶'; playBtn.classList.remove('playing');
-  document.getElementById('home-screen').style.display='';
-  document.getElementById('editor-screen').style.display='none';
-  document.getElementById('gallery-screen').style.display='none';
-  document.getElementById('topbar-editor-btns').style.display='none';
-  document.getElementById('fps-badge').style.display='none';
-  document.getElementById('shared-banner').classList.remove('visible');
-  isSharedSim = false; currentSimSlug = null;
-  history.replaceState(null, '', window.location.pathname);
-  renderCategoryBar(); renderLibGrid();
-}
-function showGallery() {
-  document.getElementById('home-screen').style.display='none';
-  document.getElementById('editor-screen').style.display='none';
-  document.getElementById('gallery-screen').style.display='block';
-  document.getElementById('topbar-editor-btns').style.display='flex';
-  document.getElementById('sim-name-display').textContent = 'Gallery';
-  loadGallery();
-}
-function showMySimulations() { alert('My Simulations dashboard coming soon!'); }
-
-function openEditor(code, name, category, details, presetKey) {
-  document.getElementById('home-screen').style.display='none';
-  document.getElementById('gallery-screen').style.display='none';
-  document.getElementById('editor-screen').style.display='flex';
-  document.getElementById('topbar-editor-btns').style.display='flex';
-  document.getElementById('fps-badge').style.display='';
-  document.getElementById('sim-name-display').textContent = name || '';
-  currentSimName = name || ''; currentSimCategory = category || ''; currentPresetKey = presetKey || null;
-  codeEditor.value = code; clearConsoles(); setStatus('idle'); resizeCanvas();
-  ctx.fillStyle = canvasBg; ctx.fillRect(0,0,canvasW,canvasH);
-  canvasOverlay.style.display=''; frame=0; frameCounter.textContent='frame 0';
-  entities=[]; paramDefs=[]; paramValues={}; compiledInit=null; compiledUpdate=null;
-  paramsInner.innerHTML='<span class="params-empty">No parameters yet.</span>';
-  switchEditorTab('code'); updateNavLabel(); renderDetailsPanel();
-}
-function newSim() { currentSimId = null; currentPresetKey = null; isSharedSim = false; document.getElementById('shared-banner').classList.remove('visible'); openEditor(BLANK_CODE, 'Untitled', '', null, null); }
-function loadPreset(key) { const p = PRESETS[key]; if (!p) return; currentSimId = null; isSharedSim = false; document.getElementById('shared-banner').classList.remove('visible'); openEditor(p.code, p.name, p.category, p.details, key); history.replaceState(null, '', '#preset=' + key); }
-function loadCustom(id) { const lib = getLibrary(); const sim = lib[id]; if (!sim) return; currentSimId = id; currentPresetKey = null; isSharedSim = false; document.getElementById('shared-banner').classList.remove('visible'); openEditor(sim.code, sim.name, sim.category || '', null, null); }
-function deleteCustom(id, e) { e.stopPropagation(); if (!confirm('Delete?')) return; const lib = getLibrary(); delete lib[id]; saveLibrary(lib); renderLibGrid(); }
-function forkSharedSim() { isSharedSim = false; currentSimId = null; currentPresetKey = null; document.getElementById('shared-banner').classList.remove('visible'); history.replaceState(null, '', window.location.pathname); showOk('Forked! You can now edit and save this simulation.'); }
-
-function renderCategoryBar() {
-  const bar = document.getElementById('category-bar'); bar.innerHTML = '';
-  const counts = { all: 0 }; Object.keys(CATEGORIES).forEach(k => { if (k !== 'all') counts[k] = 0; });
-  Object.values(PRESETS).forEach(p => { counts.all++; if (counts[p.category] !== undefined) counts[p.category]++; });
-  const lib = getLibrary(); Object.values(lib).forEach(sim => { counts.all++; if (counts[sim.category] !== undefined) counts[sim.category]++; });
-  Object.entries(CATEGORIES).forEach(([key, cat]) => {
-    const pill = document.createElement('button');
-    pill.className = 'cat-pill' + (currentCategory === key ? ' active' : '');
-    pill.innerHTML = `<span class="cat-icon">${cat.icon}</span>${cat.name}<span class="cat-count">${counts[key] || 0}</span>`;
-    pill.onclick = () => { currentCategory = key; renderCategoryBar(); renderLibGrid(); };
-    bar.appendChild(pill);
-  });
-}
-function renderLibGrid() {
-  const grid = document.getElementById('lib-grid'); grid.innerHTML = '';
-  const title = document.getElementById('lib-section-title');
-  const presetEntries = Object.entries(PRESETS).filter(([key, p]) => currentCategory === 'all' || p.category === currentCategory);
-  const lib = getLibrary();
-  const customEntries = Object.entries(lib).filter(([id, sim]) => currentCategory === 'all' || (sim.category || 'custom') === currentCategory);
-  title.textContent = currentCategory === 'all' ? `Simulation library (${presetEntries.length + customEntries.length})` : `${CATEGORIES[currentCategory]?.icon || ''} ${CATEGORIES[currentCategory]?.name} (${presetEntries.length + customEntries.length})`;
-  presetEntries.forEach(([key, p]) => {
-    const card = document.createElement('div'); card.className = 'sim-card';
-    const catInfo = CATEGORIES[p.category] || { name: p.category, icon: '📁' };
-    card.innerHTML = `<div class="sim-card-icon">${p.icon}</div><div class="sim-card-name">${p.name}</div><div class="sim-card-desc">${p.desc}</div><div class="sim-card-tag tag-preset">preset</div><div class="sim-card-cat">${catInfo.icon} ${catInfo.name}</div>`;
-    card.onclick = () => loadPreset(key); grid.appendChild(card);
-  });
-  customEntries.forEach(([id, sim]) => {
-    const card = document.createElement('div'); card.className = 'sim-card';
-    const catInfo = CATEGORIES[sim.category] || { name: sim.category || 'Custom', icon: '📁' };
-    card.innerHTML = `<div class="sim-card-icon">${sim.icon||'🔬'}</div><div class="sim-card-name">${sim.name}</div><div class="sim-card-desc">${sim.desc||'Custom'}</div><div class="sim-card-tag tag-custom">custom</div><div class="sim-card-cat">${catInfo.icon} ${catInfo.name}</div><button class="sim-card-del" title="Delete">✕</button>`;
-    card.onclick = () => loadCustom(id); card.querySelector('.sim-card-del').onclick = (e) => deleteCustom(id, e);
-    grid.appendChild(card);
-  });
-  const newCard = document.createElement('div'); newCard.className = 'sim-card'; newCard.style.cssText = 'border-style:dashed; align-items:center; justify-content:center; min-height:120px;';
-  newCard.innerHTML = `<div style="font-size:24px;opacity:0.3">＋</div><div style="color:var(--text3);font-size:12px;margin-top:4px">New simulation</div>`;
-  newCard.onclick = newSim; grid.appendChild(newCard);
+function toggleUserMenu() { 
+  document.getElementById('user-dropdown')?.classList.toggle('open'); 
 }
 
-async function loadGallery() {
-  const sort = document.getElementById('gallery-sort').value;
-  let query = supabaseClient.from('simulations').select(`*, profiles:user_id (username, avatar_url)`).eq('is_public', true);
-  if (sort === 'popular') query = query.order('views', { ascending: false });
-  else if (sort === 'liked') query = query.order('likes', { ascending: false });
-  else query = query.order('created_at', { ascending: false });
-  const { data, error } = await query.limit(50);
-  if (error) { console.error(error); return; }
-  const grid = document.getElementById('gallery-grid'); grid.innerHTML = '';
-  if (!data || data.length === 0) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">No simulations yet.</div>'; return; }
-  data.forEach(sim => {
-    const card = document.createElement('div'); card.className = 'gallery-card';
-    const authorName = sim.profiles?.username || 'Anonymous';
-    const catInfo = CATEGORIES[sim.category] || { name: sim.category, icon: '📁' };
-    card.innerHTML = `<div class="gallery-card-header"><div class="gallery-card-icon">${sim.icon || '🔬'}</div><div class="gallery-card-info"><div class="gallery-card-name">${sim.name}</div><div class="gallery-card-author">by ${authorName}</div></div></div><div class="gallery-card-desc">${sim.description || 'No description'}</div><div class="gallery-card-footer"><div class="gallery-stat"><span>👁️</span><span>${sim.views || 0}</span></div><div class="gallery-stat"><span>❤️</span><span>${sim.likes || 0}</span></div><div class="gallery-card-cat">${catInfo.icon} ${catInfo.name}</div></div>`;
-    card.onclick = () => loadSharedSimBySlug(sim.slug); grid.appendChild(card);
-  });
+document.addEventListener('click', (e) => { 
+  const d = document.getElementById('user-dropdown'); 
+  if (d && !e.target.closest('.user-menu')) d.classList.remove('open'); 
+});
+
+async function loginWithGitHub() { 
+  await supabaseClient.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin } }); 
 }
 
-async function saveSimulation() {
-  if (!currentUser) { showError('Please sign in to save simulations.'); return; }
-  const name = document.getElementById('modal-name').value.trim() || 'Untitled';
-  const desc = document.getElementById('modal-desc').value.trim();
-  const icon = document.getElementById('modal-icon').value.trim() || '🔬';
-  const category = document.getElementById('modal-category').value;
-  const isPublic = document.getElementById('modal-public').checked;
+async function logout() { 
+  await supabaseClient.auth.signOut(); 
+  window.location.href = '/'; 
+}
+
+async function showMySimulations() {
+  if (!currentUser) {
+    showToast('Please sign in first');
+    return;
+  }
+  
   try {
-    let simData;
-    if (currentSimId && !isSharedSim) {
-      const { data, error } = await supabaseClient.from('simulations').update({ name, description: desc, icon, category, code: codeEditor.value, is_public: isPublic, updated_at: new Date().toISOString() }).eq('id', currentSimId).select().single();
-      if (error) throw error; simData = data; showOk('Updated: ' + name);
+    const { data: sims, error } = await supabaseClient
+      .from('simulations')
+      .select('*')
+      .eq('author_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    if (!sims || sims.length === 0) {
+      showToast('You haven\'t created any simulations yet');
+      return;
+    }
+    
+    // Load the first simulation
+    const sim = sims[0];
+    currentSimSlug = sim.slug;
+    currentSimId = sim.id;
+    
+    const simData = {
+      name: sim.name || 'Untitled',
+      icon: sim.icon || '🔬',
+      desc: sim.description || 'Your simulation',
+      concepts: [],
+      objectives: [],
+      params: [],
+      code: sim.code || '',
+      isCustom: true
+    };
+    
+    openEditor(simData, 'custom', sim.id, false);
+  } catch(e) {
+    showToast('Failed to load simulations: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// SAVE SIMULATION TO DATABASE
+// ═══════════════════════════════════════════════════════
+async function saveSimulationToSupabase() {
+  if (!currentUser) { 
+    showToast('Please sign in to save to cloud'); 
+    return; 
+  }
+  
+  const name = document.getElementById('modal-name').value.trim() || 'Untitled';
+  const code = document.getElementById('code-editor').value;
+  
+  try {
+    if (currentSimId) {
+      const { error } = await supabaseClient.from('simulations').update({ 
+        name, 
+        code, 
+        updated_at: new Date().toISOString() 
+      }).eq('id', currentSimId);
+      if (error) throw error;
+      showToast('Updated: ' + name);
     } else {
       const slug = Math.random().toString(36).substring(2, 10);
-      const { data, error } = await supabaseClient.from('simulations').insert({ slug, name, description: desc, icon, category, code: codeEditor.value, author_id: currentUser.id, is_public: isPublic }).select().single();
-      if (error) throw error; simData = data; currentSimId = simData.id; currentSimSlug = simData.slug; showOk('Saved: ' + name);
+      const { data, error } = await supabaseClient.from('simulations').insert({ 
+        slug, 
+        name, 
+        code, 
+        author_id: currentUser.id, 
+        is_public: true 
+      }).select().single();
+      if (error) throw error;
+      currentSimId = data.id;
+      currentSimSlug = data.slug;
+      showToast('Saved: ' + name);
+      history.replaceState(null, '', '/s/' + slug);
     }
-    currentSimName = name; currentSimCategory = category;
-    document.getElementById('sim-name-display').textContent = name;
-    closeSaveModal(); history.replaceState(null, '', '/s/' + simData.slug);
-  } catch(e) { showError('Save failed: ' + e.message); }
+    closeSaveModal();
+  } catch(e) { 
+    showToast('Save failed: ' + e.message); 
+  }
 }
-function openSaveModal() {
-  document.getElementById('modal-name').value = currentSimName && currentSimName !== 'Untitled' ? currentSimName : '';
-  document.getElementById('modal-desc').value = '';
-  document.getElementById('modal-icon').value = '🔬';
-  const sel = document.getElementById('modal-category'); sel.innerHTML = '';
-  Object.entries(CATEGORIES).forEach(([key, cat]) => { if (key === 'all') return; const opt = document.createElement('option'); opt.value = key; opt.textContent = cat.icon + ' ' + cat.name; if (key === currentSimCategory) opt.selected = true; sel.appendChild(opt); });
-  document.getElementById('modal-public').checked = true;
-  document.getElementById('save-modal').classList.add('open');
-}
-function closeSaveModal() { document.getElementById('save-modal').classList.remove('open'); }
 
-async function loadSharedSimBySlug(slug) {
-  const { data: sim, error } = await supabaseClient.from('simulations').select(`*, profiles:user_id (username, avatar_url)`).eq('slug', slug).single();
-  if (error || !sim) { showError('Simulation not found'); goHome(); return; }
+async function loadSimulationBySlug(slug) {
+  const { data: sim, error } = await supabaseClient.from('simulations').select('*').eq('slug', slug).single();
+  if (error || !sim) { 
+    showToast('Simulation not found'); 
+    goHome();
+    return; 
+  }
+  
   supabaseClient.rpc('increment_views', { sim_id: sim.id }).catch(() => {});
-  isSharedSim = true; currentSimSlug = sim.slug; currentSimId = sim.id;
-  document.getElementById('shared-banner').classList.add('visible');
-  document.getElementById('shared-banner-text').textContent = `🔗 Viewing "${sim.name}" by ${sim.profiles?.username || 'Anonymous'}`;
-  openEditor(sim.code, sim.name, sim.category, null, null);
-  history.replaceState(null, '', '/s/' + sim.slug);
+  currentSimSlug = sim.slug;
+  currentSimId = sim.id;
+  
+  // Create simulation object in expected format
+  const simData = {
+    name: sim.name || 'Untitled',
+    icon: sim.icon || '🔬',
+    desc: sim.description || 'Shared simulation',
+    concepts: [],
+    objectives: [],
+    params: [],
+    code: sim.code || '',
+    isCustom: true
+  };
+  
+  // Open editor with the loaded simulation
+  openEditor(simData, 'custom', sim.id, false);
 }
 
-async function shareSimulation() {
-  if (!currentSimSlug && !currentPresetKey) { showError('Please save the simulation first to get a share link.'); return; }
-  const url = currentPresetKey ? window.location.origin + window.location.pathname + '#preset=' + currentPresetKey : window.location.origin + '/s/' + currentSimSlug;
-  try { await navigator.clipboard.writeText(url); } catch { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-  const toast = document.getElementById('share-toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-let entities=[], paramDefs=[], paramValues={}, compiledUpdate=null, compiledInit=null;
-let rafId=null, isPlaying=false, frame=0, lastTime=0, fpsFrames=0, fpsTime=0;
-let canvasW=800, canvasH=550, targetFps=60, trailEnabled=true, canvasBg='#090a0d';
-const canvas = document.getElementById('sim-canvas'), ctx = canvas.getContext('2d');
-const codeEditor = document.getElementById('code-editor'), errorConsole = document.getElementById('error-console'), okConsole = document.getElementById('ok-console');
-const paramsInner = document.getElementById('params-inner'), playBtn = document.getElementById('play-btn'), frameCounter = document.getElementById('frame-counter');
-const fpsDisplay = document.getElementById('fps-badge'), statusBadge = document.getElementById('sim-status'), canvasOverlay = document.getElementById('canvas-overlay');
-
-function resizeCanvas() {
-  canvas.width=canvasW; canvas.height=canvasH;
-  const wrap=document.getElementById('canvas-wrap');
-  const scale=Math.min((wrap.clientWidth-16)/canvasW,(wrap.clientHeight-16)/canvasH,1);
-  canvas.style.width=(canvasW*scale)+'px'; canvas.style.height=(canvasH*scale)+'px';
-}
-window.addEventListener('resize', resizeCanvas);
-
-function switchEditorTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{ const tabs=['code','details','guide','settings']; b.classList.toggle('active', tabs[i]===tab); });
-  document.getElementById('editor-wrap').style.display = tab==='code'?'flex':'none';
-  document.getElementById('details-panel').style.display = tab==='details'?'block':'none';
-  document.getElementById('guide-panel').style.display = tab==='guide'?'block':'none';
-  document.getElementById('settings-panel').style.display = tab==='settings'?'flex':'none';
-  if (tab === 'details') renderDetailsPanel();
-}
-function applySettings() {
-  canvasW=parseInt(document.getElementById('set-cw').value)||800; canvasH=parseInt(document.getElementById('set-ch').value)||550;
-  targetFps=parseInt(document.getElementById('set-fps').value)||60; trailEnabled=document.getElementById('set-trail').checked; canvasBg=document.getElementById('set-bg').value;
-  resizeCanvas(); if (compiledInit) doReset();
-}
-function setStatus(s) { statusBadge.className='status-'+s; statusBadge.textContent={idle:'idle',run:'running',pause:'paused',error:'error'}[s]||s; }
-function showError(msg) { errorConsole.textContent=' '+msg; errorConsole.classList.add('visible'); okConsole.classList.remove('visible'); setStatus('error'); }
-function showOk(msg) { okConsole.textContent='✓ '+msg; okConsole.classList.add('visible'); errorConsole.classList.remove('visible'); setTimeout(()=>okConsole.classList.remove('visible'),2500); }
-function clearConsoles() { errorConsole.classList.remove('visible'); okConsole.classList.remove('visible'); }
-
-function compileAndRun() {
-  clearConsoles();
-  try {
-    const fn = new Function(codeEditor.value+'\nreturn {defineParameters,init,update};');
-    const api = fn();
-    if (typeof api.defineParameters!=='function') throw new Error('defineParameters() not found');
-    if (typeof api.init!=='function') throw new Error('init() not found');
-    if (typeof api.update!=='function') throw new Error('update() not found');
-    paramDefs=api.defineParameters(); compiledInit=api.init; compiledUpdate=api.update;
-    buildParamControls(); doReset(); showOk('Compiled — '+entities.length+' entities'); canvasOverlay.style.display='none';
-  } catch(e) { showError(e.message); compiledInit=null; compiledUpdate=null; }
-}
-function buildParamControls() {
-  paramsInner.innerHTML=''; paramValues={};
-  if (!paramDefs.length) { paramsInner.innerHTML='<span class="params-empty">No parameters defined.</span>'; return; }
-  paramDefs.forEach(def => {
-    paramValues[def.name]=def.default;
-    const g=document.createElement('div'); g.className='param-group';
-    const lbl=document.createElement('span'); lbl.className='param-label'; lbl.textContent=def.name; g.appendChild(lbl);
-    if (def.type==='slider') {
-      const inp=document.createElement('input'); inp.type='range'; inp.min=def.min; inp.max=def.max; inp.step=def.step||0.01; inp.value=def.default;
-      const val=document.createElement('span'); val.className='param-value'; val.textContent=fmtVal(def.default);
-      inp.addEventListener('input',()=>{ paramValues[def.name]=parseFloat(inp.value); val.textContent=fmtVal(parseFloat(inp.value)); });
-      g.appendChild(inp); g.appendChild(val);
-    } else if (def.type==='number') {
-      const inp=document.createElement('input'); inp.type='number'; inp.min=def.min; inp.max=def.max; inp.value=def.default;
-      inp.addEventListener('change',()=>{ paramValues[def.name]=parseFloat(inp.value); }); g.appendChild(inp);
-    } else if (def.type==='checkbox') {
-      const inp=document.createElement('input'); inp.type='checkbox'; inp.checked=!!def.default; paramValues[def.name]=!!def.default;
-      inp.addEventListener('change',()=>{ paramValues[def.name]=inp.checked; }); g.appendChild(inp);
-    }
-    paramsInner.appendChild(g);
-  });
-}
-function fmtVal(v) { if (Number.isInteger(v)) return v+''; if (Math.abs(v)<0.01) return v.toFixed(3); if (Math.abs(v)<1) return v.toFixed(2); return v.toFixed(1); }
-function doReset() {
-  if (!compiledInit) return; stopLoop(); isPlaying=false; playBtn.innerHTML='▶'; playBtn.classList.remove('playing');
-  try { entities=compiledInit({...paramValues}); frame=0; frameCounter.textContent='frame 0'; setStatus('idle'); renderFrame(); } catch(e) { showError('init() error: '+e.message); }
-}
-function renderFrame() {
-  if (trailEnabled) { ctx.fillStyle=canvasBg+'cc'; ctx.fillRect(0,0,canvasW,canvasH); } else { ctx.fillStyle=canvasBg; ctx.fillRect(0,0,canvasW,canvasH); }
-  entities.forEach(e => {
-    if (!e||e.color==='transparent') return;
-    if (e.trail&&e.trail.length>1) { ctx.beginPath(); ctx.moveTo(e.trail[0].x,e.trail[0].y); for (let i=1;i<e.trail.length;i++) ctx.lineTo(e.trail[i].x,e.trail[i].y); ctx.strokeStyle=e.color; ctx.globalAlpha=0.25; ctx.lineWidth=1.5; ctx.stroke(); ctx.globalAlpha=1; }
-    ctx.fillStyle=e.color;
-    if (e.shape==='rect') { ctx.fillRect(e.x, e.y, e.radius||8, e.height||e.radius||8); }
-    else if (e.shape==='triangle') { const a=e.angle||0, r=e.radius||6; ctx.save(); ctx.translate(e.x,e.y); ctx.rotate(a); ctx.beginPath(); ctx.moveTo(r,0); ctx.lineTo(-r*0.6,-r*0.5); ctx.lineTo(-r*0.6,r*0.5); ctx.closePath(); ctx.fill(); ctx.restore(); }
-    else { ctx.beginPath(); ctx.arc(e.x,e.y,e.radius||5,0,Math.PI*2); ctx.fill(); }
-    if (e.label) { ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='9px sans-serif'; ctx.textAlign='center'; ctx.fillText(e.label, e.x, e.y-(e.radius||5)-3); }
-  });
-}
-function loop(ts) {
-  if (!isPlaying) return;
-  const interval=1000/targetFps, delta=ts-lastTime;
-  if (delta>=interval) {
-    lastTime=ts-(delta%interval); fpsFrames++; fpsTime+=delta;
-    if (fpsTime>=500) { fpsDisplay.textContent=Math.round(fpsFrames*1000/fpsTime)+' FPS'; fpsFrames=0; fpsTime=0; }
-    stepFrame();
-  }
-  rafId=requestAnimationFrame(loop);
-}
-function stepFrame() {
-  if (!compiledUpdate) return;
-  try { entities=compiledUpdate(entities,{...paramValues}); frame++; frameCounter.textContent='frame '+frame; renderFrame(); setStatus('run'); }
-  catch(e) { showError('update() error: '+e.message); stopLoop(); isPlaying=false; playBtn.innerHTML='▶'; playBtn.classList.remove('playing'); }
-}
-function stopLoop() { if (rafId) { cancelAnimationFrame(rafId); rafId=null; } }
-
-document.getElementById('play-btn').addEventListener('click',()=>{
-  if (!compiledInit) { showError('No code compiled. Click ⚡ Compile & Run first.'); return; }
-  isPlaying=!isPlaying;
-  if (isPlaying) { lastTime=performance.now(); rafId=requestAnimationFrame(loop); playBtn.innerHTML=''; playBtn.classList.add('playing'); setStatus('run'); }
-  else { stopLoop(); playBtn.innerHTML='▶'; playBtn.classList.remove('playing'); setStatus(''); }
-});
-document.getElementById('step-btn').addEventListener('click',()=>{ if (!compiledUpdate) return; if (isPlaying) { isPlaying=false; stopLoop(); playBtn.innerHTML='▶'; playBtn.classList.remove('playing'); } stepFrame(); setStatus('pause'); });
-document.getElementById('reset-btn').addEventListener('click', doReset);
-codeEditor.addEventListener('keydown', e => {
-  if (e.key==='Tab') { e.preventDefault(); const s=codeEditor.selectionStart,end=codeEditor.selectionEnd; codeEditor.value=codeEditor.value.substring(0,s)+'  '+codeEditor.value.substring(end); codeEditor.selectionStart=codeEditor.selectionEnd=s+2; }
-  if ((e.ctrlKey||e.metaKey)&&e.key==='Enter') { e.preventDefault(); compileAndRun(); }
-});
-
-function updateNavLabel() {
-  const label = document.getElementById('sim-nav-label');
-  const key = currentPresetKey || currentSimId;
-  if (!key) { label.textContent = '—'; return; }
-  const sims = getSimsInCategory(currentSimCategory || 'all');
-  const idx = sims.indexOf(key);
-  const catName = currentSimCategory && currentSimCategory !== 'all' ? (CATEGORIES[currentSimCategory]?.name || currentSimCategory) : 'All';
-  label.textContent = idx >= 0 ? `${catName} · ${idx + 1}/${sims.length}` : catName;
-}
-function navigateSim(direction) {
-  const key = currentPresetKey || currentSimId; if (!key) return;
-  const sims = getSimsInCategory(currentSimCategory || 'all');
-  const idx = sims.indexOf(key); if (idx < 0) return;
-  let newIdx = idx + direction; if (newIdx < 0) newIdx = sims.length - 1; if (newIdx >= sims.length) newIdx = 0;
-  const newKey = sims[newIdx];
-  if (PRESETS[newKey]) loadPreset(newKey); else loadCustom(newKey);
-}
-function browseCurrentCategory() { currentCategory = currentSimCategory || 'all'; goHome(); }
-
-function renderDetailsPanel() {
-  const panel = document.getElementById('details-panel');
-  const key = currentPresetKey; const preset = key ? PRESETS[key] : null;
-  let simData = preset;
-  if (!simData && currentSimId) { const lib = getLibrary(); simData = lib[currentSimId]; }
-  if (!simData) { panel.innerHTML = '<div class="details-empty">No details available.</div>'; return; }
-  const details = simData.details || {};
-  const catInfo = CATEGORIES[simData.category] || { name: simData.category || 'Custom', icon: '', color: '#6b6c78' };
-  let html = `<div class="details-header"><div class="details-icon">${simData.icon || '🔬'}</div><div class="details-info"><div class="details-name">${simData.name || 'Untitled'}</div><div class="details-desc">${simData.desc || 'No description'}</div><div class="details-cat-badge" style="background:${catInfo.color}22;color:${catInfo.color};border:1px solid ${catInfo.color}44">${catInfo.icon} ${catInfo.name}</div></div></div>`;
-  if (details.objectives?.length) html += `<div class="details-section"><h4><span class="sec-icon">🎯</span> Learning Objectives</h4><ul>${details.objectives.map(o => `<li>${o}</li>`).join('')}</ul></div>`;
-  if (details.concepts?.length) html += `<div class="details-section"><h4><span class="sec-icon">🧠</span> Key Concepts</h4><ul>${details.concepts.map(c => `<li>${c}</li>`).join('')}</ul></div>`;
-  if (details.curriculum) html += `<div class="details-section"><h4><span class="sec-icon">📚</span> Curriculum Level</h4><p style="font-size:12px;color:var(--text2);margin:0">${details.curriculum}</p></div>`;
-  if (details.tips?.length) html += `<div class="details-section"><h4><span class="sec-icon"></span> Teaching Tips</h4>${details.tips.map(t => `<div class="details-tip">${t}</div>`).join('')}</div>`;
-  if (simData.category) {
-    const related = Object.entries(PRESETS).filter(([k, p]) => p.category === simData.category && k !== key).slice(0, 4);
-    if (related.length) html += `<div class="details-section"><h4><span class="sec-icon">🔗</span> Related Simulations</h4><div class="details-related">${related.map(([k, p]) => `<div class="details-related-card" onclick="loadPreset('${k}')"><span class="rel-icon">${p.icon}</span><span>${p.name}</span></div>`).join('')}</div></div>`;
-  }
-  if (!details.objectives && !details.concepts && !details.curriculum && !details.tips) html += `<div class="details-empty">This simulation doesn't have educational details yet.</div>`;
-  panel.innerHTML = html;
-}
-
-function handleRouting() {
-  const path = window.location.pathname;
-  const simMatch = path.match(/^\/s\/([a-z0-9]+)$/);
-  if (simMatch) { loadSharedSimBySlug(simMatch[1]); return; }
-  const hash = window.location.hash;
-  if (hash.startsWith('#preset=')) { const key = hash.replace('#preset=', ''); if (PRESETS[key]) { loadPreset(key); return; } }
-  goHome();
-}
-
-initAuth();
-handleRouting();
-renderCategoryBar();
-renderLibGrid();
-
-(function heroAnim() {
-  const hc = document.getElementById('hero-canvas'); const hctx = hc.getContext('2d'); const W=520, H=130;
-  const particles = []; const COLORS = ['#7c6af7','#4a9eff','#3ecf8e','#ff6b6b','#ffd93d','#f5a623'];
-  for (let i=0; i<55; i++) particles.push({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*1.2, vy: (Math.random()-0.5)*1.2, r: 2+Math.random()*4, color: COLORS[Math.floor(Math.random()*COLORS.length)] });
-  function drawHero() {
-    hctx.fillStyle='#090a0d'; hctx.fillRect(0,0,W,H);
-    for (let i=0;i<particles.length;i++) for (let j=i+1;j<particles.length;j++) {
-      const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y, d=Math.sqrt(dx*dx+dy*dy);
-      if (d<80) { hctx.beginPath(); hctx.moveTo(particles[i].x,particles[i].y); hctx.lineTo(particles[j].x,particles[j].y); hctx.strokeStyle=`rgba(124,106,247,${(1-d/80)*0.25})`; hctx.lineWidth=0.8; hctx.stroke(); }
-    }
-    particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; if (p.x<0||p.x>W) p.vx*=-1; if (p.y<0||p.y>H) p.vy*=-1; hctx.beginPath(); hctx.arc(p.x,p.y,p.r,0,Math.PI*2); hctx.fillStyle=p.color; hctx.fill(); });
-    requestAnimationFrame(drawHero);
-  }
-  drawHero();
+// ═══════════════════════════════════════════════════════
+// HERO ANIMATION
+// ═══════════════════════════════════════════════════════
+(function(){
+  const hc=document.getElementById('hero-canvas');
+  const hx=hc.getContext('2d');
+  const W=340,H=110,COLORS=['#7c6af7','#4a9eff','#3ecf8e','#ff6b6b','#ffd93d','#f5a623'];
+  const pts=Array.from({length:40},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*1,vy:(Math.random()-.5)*1,r:2+Math.random()*3.5,color:COLORS[Math.random()*COLORS.length|0]}));
+  function draw(){hx.fillStyle='#090a0d';hx.fillRect(0,0,W,H);for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<75){hx.beginPath();hx.moveTo(pts[i].x,pts[i].y);hx.lineTo(pts[j].x,pts[j].y);hx.strokeStyle=`rgba(124,106,247,${(1-d/75)*.2})`;hx.lineWidth=.7;hx.stroke();}}pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;hx.beginPath();hx.arc(p.x,p.y,p.r,0,Math.PI*2);hx.fillStyle=p.color;hx.fill();});requestAnimationFrame(draw);}draw();
 })();
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+initAuth();
+renderHome();
+handleRoute();
 </script>
-<script src="index.js" defer></script>
 </body>
 </html>
