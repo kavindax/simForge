@@ -6,6 +6,11 @@
 <title>SimForge — Universal Simulation Sandbox</title>
 <meta name="description" content="Build, share and explore interactive simulations for science education.">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.15.1/beautify.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -124,7 +129,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .tab-btn{padding:9px 13px;font-size:12px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:color 0.12s;background:none;border-top:none;border-left:none;border-right:none;}
 .tab-btn:hover{color:var(--text);}
 .tab-btn.active{color:var(--text);border-bottom-color:var(--accent);}
-#editor-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+#editor-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+#editor-wrap .CodeMirror{flex:1;height:auto!important;}
 #code-editor{width:100%;flex:1;background:#0b0c10;color:#c8d0e0;border:none;resize:none;font-family:var(--mono);font-size:12px;line-height:1.65;padding:13px 14px;tab-size:2;outline:none;overflow:auto;}
 
 /* About panel */
@@ -170,6 +176,50 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 #run-btn:hover{background:var(--accent2);}
 #save-btn{background:var(--surface2);color:var(--green);border:1px solid rgba(62,207,142,0.3);border-radius:var(--r);padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.12s;}
 #save-btn:hover{background:var(--green-dim);}
+#fork-btn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,166,35,0.4);border-radius:var(--r);padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;display:none;transition:all 0.12s;}
+#fork-btn.visible{display:block;}
+#fork-btn:hover{background:rgba(245,166,35,0.22);}
+#view-only-banner{display:none;align-items:center;justify-content:center;gap:8px;padding:7px 14px;background:var(--amber-dim);border-bottom:1px solid rgba(245,166,35,0.25);color:var(--amber);font-size:11px;flex-shrink:0;}
+#view-only-banner.visible{display:flex;}
+.about-stats{font-size:11px;color:var(--text3);margin-bottom:10px;display:flex;gap:12px;}
+.CodeMirror{height:100%!important;font-family:var(--mono)!important;font-size:12px!important;line-height:1.65!important;background:#0b0c10!important;color:#c8d0e0!important;}
+.CodeMirror-gutters{background:#080910!important;border-right:1px solid var(--border)!important;}
+.CodeMirror-linenumber{color:var(--text3)!important;}
+.CodeMirror.read-only{opacity:0.82;}
+#format-btn{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);border-radius:var(--r);padding:7px 10px;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+#format-btn:hover{background:var(--surface3);color:var(--text);}
+#mobile-panel-toggle{display:none;}
+
+@media (max-width:900px){
+  body{overflow:hidden;}
+  .home-hero{padding:28px 20px 24px;}
+  .home-hero-inner{flex-direction:column;gap:24px;text-align:center;}
+  .hero-text{max-width:100%;}
+  .hero-actions{justify-content:center;flex-wrap:wrap;}
+  .home-body{padding:20px 16px;}
+  #home-search{width:100%;}
+  #main{flex-direction:column;}
+  #left-panel{flex:0 0 auto;max-height:52vh;border-right:none;border-bottom:1px solid var(--border);}
+  #right-panel{flex:1;min-height:0;}
+  #editor-footer{flex-wrap:wrap;}
+  #error-console,#ok-console{flex-basis:100%;}
+  #lib-drawer{width:min(300px,92vw);}
+  #sim-breadcrumb{display:none!important;}
+  #mobile-panel-toggle{display:flex;}
+}
+@media (max-width:600px){
+  #topbar{padding:0 8px;gap:4px;height:44px;}
+  .tbtn{padding:5px 8px;font-size:11px;}
+  #logo{font-size:14px;}
+  .hero-title{font-size:22px;}
+  .sim-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  .tab-btn{padding:9px 10px;font-size:11px;}
+  #run-btn,#save-btn,#fork-btn,#format-btn{padding:7px 10px;font-size:11px;}
+  .modal-box{width:min(340px,calc(100vw - 32px));}
+  #left-panel.maximized{max-height:calc(100vh - 46px);}
+  #left-panel.minimized{max-height:0;overflow:hidden;border-bottom:none;}
+  #right-panel.minimized{display:none;}
+}
 #error-console{flex:1;font-family:var(--mono);font-size:11px;color:var(--red);background:var(--red-dim);border:1px solid rgba(245,91,91,0.2);border-radius:var(--r);padding:5px 9px;min-height:32px;display:none;overflow-y:auto;max-height:70px;white-space:pre-wrap;word-break:break-all;}
 #error-console.visible{display:block;}
 #ok-console{flex:1;font-size:11px;color:var(--green);background:var(--green-dim);border:1px solid rgba(62,207,142,0.2);border-radius:var(--r);padding:5px 9px;display:none;}
@@ -288,9 +338,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
 <!-- EDITOR -->
 <div id="editor">
+  <div id="view-only-banner">👁 View-only — fork this simulation to save an editable copy to your library</div>
   <div id="main">
     <div id="left-panel">
       <div id="canvas-toolbar">
+        <button class="ctrl-btn" id="mobile-panel-toggle" title="Toggle canvas/code" onclick="toggleMobilePanel()">⇕</button>
         <button class="ctrl-btn" id="play-btn" title="Play/Pause" onclick="togglePlay()">▶</button>
         <button class="ctrl-btn" id="step-btn" title="Step" onclick="doStep()">⏭</button>
         <button class="ctrl-btn" id="reset-btn" title="Reset" onclick="doReset()">↺</button>
@@ -369,6 +421,8 @@ const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-30);
       </div>
       <div id="editor-footer">
         <button id="run-btn" onclick="compileAndRun()">⚡ Compile & Run</button>
+        <button id="format-btn" onclick="formatCode()" title="Format code">✦ Format</button>
+        <button id="fork-btn" onclick="forkSimulation()">⑂ Fork</button>
         <button id="save-btn" onclick="openSaveModal()">💾 Save</button>
         <div id="error-console"></div>
         <div id="ok-console"></div>
@@ -417,76 +471,68 @@ const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-30);
 
 <script>
 // ═══════════════════════════════════════════════════════
-// SIMULATION CATALOGUE
+// CATEGORY METADATA + PRESET LOADING (from Supabase)
 // ═══════════════════════════════════════════════════════
-const CATALOGUE = {
-  physics: {
-    label:'Physics', icon:'⚛️',
-    color:'#4a9eff',
-    sims: {
-      brownian:{ name:'Brownian Motion', icon:'🌡️', desc:'Large tracer particle buffeted by gas molecules. Demonstrates kinetic theory — temperature equals average molecular kinetic energy.', concepts:['Kinetic theory','Temperature','Molecular collisions','Thermodynamics'], objectives:['Understand why particles move faster at higher temperatures','Observe that larger particles diffuse more slowly','Connect microscopic motion to macroscopic temperature'], params:[{n:'temperature',d:'Controls average kinetic energy of gas molecules'},{n:'gasParticles',d:'Number of invisible gas molecules'},{n:'particleSize',d:'Radius of the observable tracer particle'},{n:'tracerTrail',d:'Toggle to show the random walk path of the tracer'}],
-        code:`function defineParameters(){return[{name:"temperature",type:"slider",min:50,max:500,default:200,step:10},{name:"gasParticles",type:"slider",min:20,max:200,default:80,step:5},{name:"particleSize",type:"slider",min:8,max:30,default:18,step:1},{name:"tracerTrail",type:"slider",min:0,max:1,default:1,step:1}];}
-function init(p){const e=[];for(let i=0;i<p.gasParticles;i++){const spd=(Math.random()*.5+.75)*Math.sqrt(p.temperature)*.18,a=Math.random()*Math.PI*2;e.push({id:i,type:'gas',x:Math.random()*760+20,y:Math.random()*510+20,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,radius:4,shape:'circle',color:'#4a9eff'});}e.push({id:p.gasParticles,type:'tracer',x:400,y:275,vx:0,vy:0,radius:p.particleSize,mass:20,shape:'circle',color:'#f5a623',trail:[]});return e;}
-function update(entities,p){const W=800,H=550,tracer=entities.find(e=>e.type==='tracer'),gas=entities.filter(e=>e.type==='gas'),tgt=Math.sqrt(p.temperature)*.18;const ng=gas.map(e=>{let{x,y,vx,vy,radius}=e;const spd=Math.sqrt(vx*vx+vy*vy)||1;const sc=(tgt*(.75+Math.random()*.5))/spd;vx*=.98+.02*sc;vy*=.98+.02*sc;x+=vx;y+=vy;if(x<radius){x=radius;vx=Math.abs(vx);}if(x>W-radius){x=W-radius;vx=-Math.abs(vx);}if(y<radius){y=radius;vy=Math.abs(vy);}if(y>H-radius){y=H-radius;vy=-Math.abs(vy);}const dx=x-tracer.x,dy=y-tracer.y,dist=Math.sqrt(dx*dx+dy*dy),min=radius+tracer.radius;if(dist<min&&dist>0){const nx=dx/dist,ny=dy/dist,rv=(vx-tracer.vx)*nx+(vy-tracer.vy)*ny;if(rv<0){const imp=2*rv/(1+1/tracer.mass);vx-=imp*nx;vy-=imp*ny;tracer.vx+=(imp/tracer.mass)*nx;tracer.vy+=(imp/tracer.mass)*ny;const ov=min-dist;x+=nx*ov*.6;y+=ny*ov*.6;}}const heat=Math.min(Math.sqrt(vx*vx+vy*vy)/(tgt*1.5),1);return{...e,x,y,vx,vy,color:\`hsl(\${200-heat*160},70%,60%)\`};});let tx=tracer.x+tracer.vx,ty=tracer.y+tracer.vy;tracer.vx*=.995;tracer.vy*=.995;if(tx<tracer.radius){tx=tracer.radius;tracer.vx=Math.abs(tracer.vx);}if(tx>W-tracer.radius){tx=W-tracer.radius;tracer.vx=-Math.abs(tracer.vx);}if(ty<tracer.radius){ty=tracer.radius;tracer.vy=Math.abs(tracer.vy);}if(ty>H-tracer.radius){ty=H-tracer.radius;tracer.vy=-Math.abs(tracer.vy);}const trail=p.tracerTrail>=.5?[...(tracer.trail||[]),{x:tracer.x,y:tracer.y}].slice(-120):[];return[...ng,{...tracer,x:tx,y:ty,trail}];}`},
-      electric:{ name:'Electric Fields', icon:'⚡', desc:'Point charges create vector fields. Field line density shows strength. Visualises Coulomb\'s law and superposition.', concepts:["Coulomb's law",'Electric field','Superposition','Field line density'], objectives:['Understand that field line density represents field strength','See how multiple charges superpose their fields','Predict field shape for dipoles and like-charges'], params:[{n:'charge1',d:'Magnitude of left charge (negative = attractive)'},{n:'charge2',d:'Magnitude of right charge'},{n:'charge3',d:'Magnitude of top charge (set 0 to remove)'},{n:'tracers',d:'Number of field line particles'},{n:'trailLen',d:'Length of each particle trail'}],
-        code:`function defineParameters(){return[{name:"charge1",type:"slider",min:-5,max:5,default:3,step:.5},{name:"charge2",type:"slider",min:-5,max:5,default:-3,step:.5},{name:"charge3",type:"slider",min:-5,max:5,default:0,step:.5},{name:"tracers",type:"slider",min:20,max:300,default:120,step:10},{name:"trailLen",type:"slider",min:5,max:60,default:25,step:5}];}
-function chargeColor(q){if(q===0)return'#555566';return q>0?\`hsl(10,90%,\${30+Math.abs(q)*8}%)\`:\`hsl(210,90%,\${30+Math.abs(q)*8}%)\`;}
-function init(p){const e=[];e.push({id:'C1',type:'charge',x:220,y:275,q:p.charge1,shape:'circle',radius:14,color:chargeColor(p.charge1),label:p.charge1>0?'+':'−'});e.push({id:'C2',type:'charge',x:580,y:275,q:p.charge2,shape:'circle',radius:14,color:chargeColor(p.charge2),label:p.charge2>0?'+':'−'});e.push({id:'C3',type:'charge',x:400,y:150,q:p.charge3,shape:'circle',radius:14,color:chargeColor(p.charge3),label:p.charge3>0?'+':p.charge3<0?'−':'·'});for(let i=0;i<p.tracers;i++)e.push({id:'T'+i,type:'tracer',x:Math.random()*720+40,y:Math.random()*470+40,vx:0,vy:0,radius:2,shape:'circle',color:'rgba(255,255,255,0.6)',trail:[]});return e;}
-function update(entities,p){const charges=entities.filter(e=>e.type==='charge');const tracers=entities.filter(e=>e.type==='tracer');const nc=charges.map((c,i)=>{const q=[p.charge1,p.charge2,p.charge3][i];return{...c,q,color:chargeColor(q),label:q>0?'+':q<0?'−':'·'};});const nt=tracers.map(e=>{let fx=0,fy=0;nc.forEach(c=>{if(c.q===0)return;const dx=e.x-c.x,dy=e.y-c.y,r2=dx*dx+dy*dy,r=Math.sqrt(r2)||1;if(r<c.radius+2)return;const f=c.q/(r2+200);fx+=(dx/r)*f;fy+=(dy/r)*f;});const fm=Math.sqrt(fx*fx+fy*fy)||1;let nx=e.x+(fx/fm)*2.5,ny=e.y+(fy/fm)*2.5;const near=nc.some(c=>{const dx=nx-c.x,dy=ny-c.y;return Math.sqrt(dx*dx+dy*dy)<c.radius+4;});if(nx<2||nx>798||ny<2||ny>548||near){return{...e,x:Math.random()*720+40,y:Math.random()*470+40,trail:[]};}const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-p.trailLen);const lf=Math.min(Math.log(fm*500+1)/6,1);return{...e,x:nx,y:ny,trail,color:\`hsla(\${200-lf*160},80%,65%,0.7)\`};});return[...nc,...nt];}` },
-      gravity:{ name:'Orbital Gravity', icon:'🌌', desc:'N-body gravitational simulation. Bodies attract each other with F=Gm₁m₂/r². Observe stable orbits, slingshots and collisions.', concepts:['Gravitational force','Inverse square law','Orbital mechanics','Conservation of momentum'], objectives:['See how mass and distance affect gravitational force','Observe how initial velocity determines orbit shape','Explore why planetary systems form stable configurations'], params:[{n:'bodies',d:'Number of gravitating bodies'},{n:'G',d:'Gravitational constant — increase for faster, stronger interactions'},{n:'trailLen',d:'Length of orbital trail per body'}],
-        code:`function defineParameters(){return[{name:"bodies",type:"slider",min:2,max:20,default:6,step:1},{name:"G",type:"slider",min:100,max:5000,default:1000,step:100},{name:"trailLen",type:"slider",min:0,max:60,default:20,step:5}];}
-function init(p){const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#cc5de8','#f06595','#74c0fc'];const out=[];for(let i=0;i<p.bodies;i++){const a=(i/p.bodies)*Math.PI*2,r=120+Math.random()*100,mass=20+Math.random()*60,spd=Math.sqrt(p.G*200/r)*.4;out.push({x:400+Math.cos(a)*r,y:275+Math.sin(a)*r,vx:-Math.sin(a)*spd,vy:Math.cos(a)*spd,mass,radius:Math.sqrt(mass)*1.5,shape:'circle',color:colors[i%colors.length],trail:[]});}return out;}
-function update(entities,p){return entities.map((e,i)=>{let ax=0,ay=0;for(let j=0;j<entities.length;j++){if(i===j)continue;const dx=entities[j].x-e.x,dy=entities[j].y-e.y,d=Math.sqrt(dx*dx+dy*dy)+10,f=p.G*entities[j].mass/(d*d+100);ax+=(dx/d)*f;ay+=(dy/d)*f;}const nvx=e.vx+ax*.3,nvy=e.vy+ay*.3,nx=e.x+nvx*.3,ny=e.y+nvy*.3;const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-p.trailLen);return{...e,x:nx,y:ny,vx:nvx,vy:nvy,trail};});}` }
-    }
-  },
-  chemistry: {
-    label:'Chemistry', icon:'⚗️',
-    color:'#3ecf8e',
-    sims: {
-      enzyme:{ name:'Enzyme Kinetics', icon:'🔬', desc:'Michaelis-Menten kinetics visualised. Substrate molecules collide with enzymes to form ES complexes, then release products.', concepts:['Michaelis-Menten kinetics','Enzyme saturation','Active site binding','Km and Vmax'], objectives:['Observe enzyme saturation at high substrate concentrations','Understand why reaction rate plateaus (Vmax)','See the ES complex formation and product release cycle'], params:[{n:'substrateCount',d:'Number of substrate molecules — increase to observe saturation'},{n:'enzymeCount',d:'Number of enzyme molecules'},{n:'bindRate',d:'Probability of binding when substrate meets enzyme'},{n:'catalysisRate',d:'Rate at which ES complex converts to product'},{n:'releaseRate',d:'How quickly product detaches from enzyme'}],
-        code:`function defineParameters(){return[{name:"substrateCount",type:"slider",min:10,max:200,default:80,step:5},{name:"enzymeCount",type:"slider",min:2,max:30,default:10,step:1},{name:"bindRate",type:"slider",min:.01,max:.3,default:.12,step:.01},{name:"catalysisRate",type:"slider",min:.005,max:.1,default:.02,step:.005},{name:"releaseRate",type:"slider",min:.01,max:.2,default:.05,step:.01}];}
-function init(p){const e=[];for(let i=0;i<p.substrateCount;i++){const a=Math.random()*Math.PI*2,s=1.2+Math.random()*1.5;e.push({id:'S'+i,type:'substrate',x:Math.random()*760+20,y:Math.random()*510+20,vx:Math.cos(a)*s,vy:Math.sin(a)*s,radius:5,shape:'circle',color:'#4a9eff',bound:false,boundTo:null});}for(let i=0;i<p.enzymeCount;i++)e.push({id:'E'+i,type:'enzyme',x:80+(i%5)*140,y:80+Math.floor(i/5)*130,vx:0,vy:0,radius:18,shape:'circle',color:'#3ecf8e',occupied:false,occupiedBy:null,timer:0,label:'E'});return e;}
-function update(entities,p){const W=800,H=550;const substrates=entities.filter(e=>e.type==='substrate');const enzymes=entities.filter(e=>e.type==='enzyme');const products=entities.filter(e=>e.type==='product');const ne=enzymes.map(e=>{const en={...e};if(en.occupied){en.timer++;en.color='#f5a623';en.label='ES';if(Math.random()<p.catalysisRate){en.occupied=false;en.occupiedBy=null;en.timer=0;en.color='#3ecf8e';en.label='E';const sub=substrates.find(s=>s.id===e.occupiedBy);if(sub)sub._convert=true;}}return en;});const ns=[];substrates.forEach(e=>{if(e._convert){ns.push({...e,type:'product',color:'#f5a623',vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,radius:4,bound:false,boundTo:null,_convert:false});return;}let{x,y,vx,vy,bound}=e;const en={...e};if(bound){const eg=ne.find(z=>z.id===e.boundTo);if(eg){en.x=eg.x+(Math.random()-.5)*4;en.y=eg.y+(Math.random()-.5)*4;}ns.push(en);return;}x+=vx;y+=vy;if(x<5){x=5;vx=Math.abs(vx);}if(x>W-5){x=W-5;vx=-Math.abs(vx);}if(y<5){y=5;vy=Math.abs(vy);}if(y>H-5){y=H-5;vy=-Math.abs(vy);}for(const eg of ne){if(eg.occupied)continue;const dx=x-eg.x,dy=y-eg.y;if(Math.sqrt(dx*dx+dy*dy)<eg.radius+6&&Math.random()<p.bindRate){en.bound=true;en.boundTo=eg.id;en.color='#7c6af7';eg.occupied=true;eg.occupiedBy=e.id;break;}}ns.push({...en,x,y,vx,vy});});const np=products.map(e=>{let{x,y,vx,vy}=e;x+=vx;y+=vy;vx*=.99;vy*=.99;if(x<5||x>W-5)vx*=-1;if(y<5||y>H-5)vy*=-1;return{...e,x,y,vx,vy};});return[...ns,...ne,...np];}` },
-      diffusion:{ name:'Molecular Diffusion', icon:'💧', desc:'Random walk / Brownian motion. Particles diffuse from high to low concentration. Demonstrates Fick\'s law qualitatively.', concepts:["Fick's law",'Concentration gradient','Random walk','Entropy'], objectives:["Observe that particles spread from high to low concentration","Understand that diffusion doesn't require active transport","See how temperature (step size) affects diffusion rate"], params:[{n:'particles',d:'Number of diffusing molecules'},{n:'stepSize',d:'Distance per step — analogous to temperature'},{n:'drift',d:'Directional bias — simulates a concentration gradient'},{n:'colorAge',d:'Toggle age-based colouring to see diffusion distance'}],
-        code:`function defineParameters(){return[{name:"particles",type:"slider",min:100,max:2000,default:600,step:50},{name:"stepSize",type:"slider",min:.5,max:5,default:1.5,step:.1},{name:"drift",type:"slider",min:-2,max:2,default:0,step:.1},{name:"colorAge",type:"slider",min:0,max:1,default:1,step:1}];}
-function init(p){return Array.from({length:p.particles},()=>({x:400,y:275,age:0,radius:2.5,shape:'circle',color:'#7c6af7'}));}
-function update(entities,p){return entities.map(e=>{const a=Math.random()*Math.PI*2;let nx=e.x+Math.cos(a)*p.stepSize+p.drift*.1,ny=e.y+Math.sin(a)*p.stepSize;const age=e.age+1;if(nx<0||nx>800||ny<0||ny>550){nx=400;ny=275;}let color='#7c6af7';if(p.colorAge>=.5){const t=Math.min(age/300,1);color=\`rgb(\${Math.round(124+(255-124)*t)},\${Math.round(106+(75-106)*t)},\${Math.round(247+(75-247)*t)})\`;}return{...e,x:nx,y:ny,age,color};});}` }
-    }
-  },
-  biology: {
-    label:'Biology', icon:'🧬',
-    color:'#3ecf8e',
-    sims: {
-      sir:{ name:'Virus Spread (SIR)', icon:'🦠', desc:'Susceptible-Infected-Recovered epidemic model. The gold standard for understanding how diseases spread through populations.', concepts:['SIR model','Herd immunity','R-naught (R₀)','Epidemiology'], objectives:['Understand what R₀ means and how it drives epidemic growth','Discover the herd immunity threshold','See why flattening the curve matters'], params:[{n:'population',d:'Total number of individuals in the simulation'},{n:'infectionRate',d:'Probability of transmission per contact (drives R₀)'},{n:'recoveryRate',d:'Rate at which infected individuals recover'},{n:'moveSpeed',d:'How fast individuals move'},{n:'initialInfected',d:'Number of individuals infected at the start'}],
-        code:`function defineParameters(){return[{name:"population",type:"slider",min:50,max:500,default:200,step:10},{name:"infectionRate",type:"slider",min:.01,max:.5,default:.15,step:.01},{name:"recoveryRate",type:"slider",min:.001,max:.05,default:.01,step:.001},{name:"moveSpeed",type:"slider",min:.5,max:4,default:1.5,step:.1},{name:"initialInfected",type:"number",min:1,max:20,default:3}];}
-function init(p){const out=[];for(let i=0;i<p.population;i++){out.push({x:Math.random()*780+10,y:Math.random()*530+10,vx:(Math.random()-.5)*p.moveSpeed*2,vy:(Math.random()-.5)*p.moveSpeed*2,state:i<p.initialInfected?'I':'S',radius:5,shape:'circle'});}return out;}
-function update(entities,p){return entities.map((e,i)=>{const ne={...e};ne.x+=ne.vx;ne.y+=ne.vy;if(ne.x<5||ne.x>795)ne.vx*=-1;if(ne.y<5||ne.y>545)ne.vy*=-1;ne.x=Math.max(5,Math.min(795,ne.x));ne.y=Math.max(5,Math.min(545,ne.y));if(ne.state==='S'){for(let j=0;j<entities.length;j++){if(entities[j].state==='I'){const dx=ne.x-entities[j].x,dy=ne.y-entities[j].y;if(Math.sqrt(dx*dx+dy*dy)<14&&Math.random()<p.infectionRate){ne.state='I';break;}}}}else if(ne.state==='I'){if(Math.random()<p.recoveryRate)ne.state='R';}ne.color=ne.state==='S'?'#4a9eff':ne.state==='I'?'#ff4a4a':'#3ecf8e';return ne;});}` },
-      lotka:{ name:'Predator-Prey', icon:'🦊', desc:'Spatial Lotka-Volterra model. Rabbits and foxes populations oscillate out of phase — the fundamental cycle of ecology.', concepts:['Lotka-Volterra equations','Population oscillation','Carrying capacity','Trophic cascade'], objectives:['Observe the classic out-of-phase population cycle','Find parameter values that cause extinction','Understand why removing predators can destabilise ecosystems'], params:[{n:'birthRateRabbit',d:'Rate at which rabbits reproduce'},{n:'deathRateRabbit',d:'Natural rabbit death rate'},{n:'birthRateFox',d:'Rate at which foxes reproduce (requires eating)'},{n:'deathRateFox',d:'Fox starvation rate'},{n:'visionRadius',d:'How far foxes and rabbits can see'}],
-        code:`function defineParameters(){return[{name:"birthRateRabbit",type:"slider",min:.001,max:.02,default:.006,step:.001},{name:"deathRateRabbit",type:"slider",min:.001,max:.02,default:.006,step:.001},{name:"birthRateFox",type:"slider",min:.001,max:.01,default:.003,step:.001},{name:"deathRateFox",type:"slider",min:.001,max:.02,default:.008,step:.001},{name:"visionRadius",type:"slider",min:20,max:120,default:60,step:5}];}
-function init(p){const e=[];for(let i=0;i<80;i++){const a=Math.random()*Math.PI*2;e.push({id:Math.random(),type:'rabbit',x:Math.random()*760+20,y:Math.random()*510+20,vx:Math.cos(a)*1.2,vy:Math.sin(a)*1.2,radius:5,shape:'circle',color:'#e8e8f0',energy:80+Math.random()*40});}for(let i=0;i<15;i++){const a=Math.random()*Math.PI*2;e.push({id:Math.random(),type:'fox',x:Math.random()*760+20,y:Math.random()*510+20,vx:Math.cos(a)*1.6,vy:Math.sin(a)*1.6,radius:8,shape:'triangle',color:'#f5832a',energy:100+Math.random()*50,angle:a});}return e;}
-function update(entities,p){const W=800,H=550,rabbits=entities.filter(e=>e.type==='rabbit'),foxes=entities.filter(e=>e.type==='fox'),out=[];rabbits.forEach(e=>{let{x,y,vx,vy,energy}=e;let flee=null,fd=p.visionRadius;foxes.forEach(f=>{const dx=f.x-x,dy=f.y-y,d=Math.sqrt(dx*dx+dy*dy);if(d<fd){flee=f;fd=d;}});if(flee){const dx=x-flee.x,dy=y-flee.y,d=Math.sqrt(dx*dx+dy*dy)||1;vx+=(dx/d)*.3;vy+=(dy/d)*.3;}else{vx+=(Math.random()-.5)*.3;vy+=(Math.random()-.5)*.3;}const spd=Math.sqrt(vx*vx+vy*vy)||1;if(spd>1.8){vx=(vx/spd)*1.8;vy=(vy/spd)*1.8;}x+=vx;y+=vy;if(x<5){x=5;vx=Math.abs(vx);}if(x>W-5){x=W-5;vx=-Math.abs(vx);}if(y<5){y=5;vy=Math.abs(vy);}if(y>H-5){y=H-5;vy=-Math.abs(vy);}energy=Math.min(energy-.15+.08,150);if(energy<=0)return;const ne={...e,x,y,vx,vy,energy};if(energy>120&&Math.random()<p.birthRateRabbit){out.push({...ne,id:Math.random(),x:x+Math.random()*10-5,y:y+Math.random()*10-5,vx:Math.cos(Math.random()*Math.PI*2)*1.2,vy:Math.sin(Math.random()*Math.PI*2)*1.2,energy:60});ne.energy=70;}out.push(ne);});foxes.forEach(e=>{let{x,y,vx,vy,energy}=e;let prey=null,pd=p.visionRadius;rabbits.forEach(r=>{const dx=r.x-x,dy=r.y-y,d=Math.sqrt(dx*dx+dy*dy);if(d<pd){prey=r;pd=d;}});if(prey){const dx=prey.x-x,dy=prey.y-y,d=Math.sqrt(dx*dx+dy*dy)||1;vx+=(dx/d)*.35;vy+=(dy/d)*.35;if(d<12){energy+=60;const ri=rabbits.indexOf(prey);if(ri>-1)rabbits.splice(ri,1);const ni=out.findIndex(n=>n.id===prey.id);if(ni>-1)out.splice(ni,1);}}else{vx+=(Math.random()-.5)*.4;vy+=(Math.random()-.5)*.4;}const spd=Math.sqrt(vx*vx+vy*vy)||1;if(spd>2.2){vx=(vx/spd)*2.2;vy=(vy/spd)*2.2;}x+=vx;y+=vy;if(x<5){x=5;vx=Math.abs(vx);}if(x>W-5){x=W-5;vx=-Math.abs(vx);}if(y<5){y=5;vy=Math.abs(vy);}if(y>H-5){y=H-5;vy=-Math.abs(vy);}energy-=.3;if(energy<=0)return;const er=Math.min(energy/150,1),ne={...e,x,y,vx,vy,energy,angle:Math.atan2(vy,vx),color:\`hsl(\${25+er*15},85%,\${35+er*20}%)\`};if(energy>140&&Math.random()<p.birthRateFox){out.push({...ne,id:Math.random(),energy:80});ne.energy=80;}out.push(ne);});return out.length>0?out:init(p);}` },
-      wildfire:{ name:'Wildfire Spread', icon:'🔥', desc:'Forest fire cellular automaton. Trees grow, lightning ignites fires, wind drives spread. Models real wildfire dynamics.', concepts:['Cellular automaton','Percolation theory','Fire ecology','Environmental modelling'], objectives:["See how wind direction affects fire spread patterns","Discover the critical density threshold for fire percolation","Understand why forest management matters for fire prevention"], params:[{n:'growthRate',d:'Rate at which empty land regrows into forest'},{n:'lightningRate',d:'Probability of lightning striking any tree'},{n:'spreadRate',d:'Probability of fire spreading to adjacent trees'},{n:'windX',d:'Wind direction and strength (positive = right)'},{n:'cellSize',d:'Resolution of the grid'}],
-        code:`function defineParameters(){return[{name:"growthRate",type:"slider",min:.001,max:.05,default:.008,step:.001},{name:"lightningRate",type:"slider",min:.0001,max:.005,default:.0005,step:.0001},{name:"spreadRate",type:"slider",min:.1,max:1,default:.6,step:.05},{name:"windX",type:"slider",min:-1,max:1,default:.3,step:.05},{name:"cellSize",type:"slider",min:6,max:20,default:10,step:2}];}
-function stateColor(s,h){if(s==='empty')return'#1a1d12';if(s==='tree')return'#2d6a1f';if(s==='ash')return'#3a3530';return\`rgb(255,\${Math.round(80+h*140)},\${Math.round(h*60)})\`;}
-function init(p){const cs=p.cellSize,cols=Math.floor(800/cs),rows=Math.floor(550/cs),out=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const s=Math.random()<.55?'tree':'empty';out.push({x:c*cs,y:r*cs,col:c,row:r,cols,rows,cs,state:s,heat:0,shape:'rect',radius:cs-1,height:cs-1,color:stateColor(s,0)});}return out;}
-function update(entities,p){const{cols,rows}=entities[0];const fireSet=new Set();entities.forEach((e,i)=>{if(e.state==='fire')fireSet.add(i);});return entities.map((e,i)=>{const ne={...e};if(ne.state==='empty'){if(Math.random()<p.growthRate)ne.state='tree';}else if(ne.state==='tree'){if(Math.random()<p.lightningRate){ne.state='fire';ne.heat=1;}else{const dirs=[[-1,0,1-p.windX*.4],[1,0,1+p.windX*.4],[0,-1,1],[0,1,1]];for(const[dr,dc,bias]of dirs){const nr=e.row+dr,nc=e.col+dc;if(nr<0||nr>=rows||nc<0||nc>=cols)continue;if(fireSet.has(nr*cols+nc)&&Math.random()<p.spreadRate*bias*.08){ne.state='fire';ne.heat=.8+Math.random()*.2;break;}}}}else if(ne.state==='fire'){ne.heat-=.015+Math.random()*.01;if(ne.heat<=0){ne.state='ash';ne.heat=0;}}else if(ne.state==='ash'){if(Math.random()<p.growthRate*.3)ne.state='empty';}ne.color=stateColor(ne.state,ne.heat);return ne;});}` }
-    }
-  },
-  mathematics: {
-    label:'Mathematics', icon:'📐',
-    color:'#f5a623',
-    sims: {
-      life:{ name:"Conway's Game of Life", icon:'🔲', desc:'Cellular automaton with four simple rules generating complex emergent patterns. Demonstrates emergence and computational universality.', concepts:['Cellular automaton','Emergence','Turing completeness','Self-organisation'], objectives:['Observe how simple rules create complex, unpredictable patterns','Find stable structures (still lifes), oscillators, and gliders','Understand emergence — complexity from simplicity'], params:[{n:'cellSize',d:'Grid resolution — smaller cells = more detail'},{n:'density',d:'Initial fraction of live cells'},{n:'speed',d:'Generations per frame'}],
-        code:`function defineParameters(){return[{name:"cellSize",type:"slider",min:4,max:20,default:8,step:2},{name:"density",type:"slider",min:.1,max:.7,default:.3,step:.05},{name:"speed",type:"slider",min:1,max:10,default:3,step:1}];}
-function init(p){const cs=p.cellSize,cols=Math.floor(800/cs),rows=Math.floor(550/cs),out=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const alive=Math.random()<p.density;out.push({x:c*cs,y:r*cs,col:c,row:r,cols,rows,alive,shape:'rect',radius:cs-1,height:cs-1,color:alive?'#7c6af7':'transparent',speedCtr:0});}return out;}
-function update(entities,p){const{cols,rows}=entities[0],alive=new Set(entities.filter(e=>e.alive).map(e=>e.row*cols+e.col)),steps=Math.max(1,Math.round(11-p.speed));return entities.map(e=>{const ne={...e};ne.speedCtr=(ne.speedCtr||0)+1;if(ne.speedCtr<steps){ne.color=ne.alive?'#7c6af7':'transparent';return ne;}ne.speedCtr=0;let n=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(dr===0&&dc===0)continue;const r=((e.row+dr)+rows)%rows,c=((e.col+dc)+cols)%cols;if(alive.has(r*cols+c))n++;}ne.alive=ne.alive?(n===2||n===3):n===3;ne.color=ne.alive?'#7c6af7':'transparent';return ne;});}` },
-      prisoners:{ name:"Prisoner's Dilemma", icon:'🎮', desc:'Spatial game theory — cooperators vs defectors. Each cell copies the most successful neighbour. Watch strategy patterns evolve.', concepts:['Game theory',"Nash equilibrium",'Evolutionary dynamics','Spatial games'], objectives:['Find the temptation value (b) where cooperators and defectors coexist','Observe that cooperators survive by clustering together','Understand why cooperation can be evolutionarily stable'], params:[{n:'b',d:'Temptation to defect — the key parameter. Watch the phase transition around b=1.8'},{n:'noise',d:'Random mutation rate — prevents lock-in'},{n:'initDefect',d:'Starting fraction of defectors'},{n:'cellSize',d:'Grid resolution'},{n:'speed',d:'Generations per frame'}],
-        code:`function defineParameters(){return[{name:"cellSize",type:"slider",min:4,max:16,default:8,step:2},{name:"b",type:"slider",min:1,max:2.5,default:1.65,step:.05},{name:"noise",type:"slider",min:0,max:.2,default:.02,step:.01},{name:"initDefect",type:"slider",min:.1,max:.9,default:.3,step:.05},{name:"speed",type:"slider",min:1,max:10,default:4,step:1}];}
-function init(p){const cs=p.cellSize,cols=Math.floor(800/cs),rows=Math.floor(550/cs),out=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const d=Math.random()<p.initDefect;out.push({x:c*cs,y:r*cs,col:c,row:r,cols,rows,strategy:d?1:0,score:0,shape:'rect',radius:cs-1,height:cs-1,color:d?'#e05252':'#4a90d9'});}return out;}
-function update(entities,p){const{cols,rows}=entities[0],b=p.b,steps=Math.max(1,Math.round(p.speed));let cur=entities;for(let s=0;s<steps;s++){const sc=cur.map((e,i)=>{let score=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(dr===0&&dc===0)continue;const nr=e.row+dr,nc=e.col+dc;if(nr<0||nr>=rows||nc<0||nc>=cols)continue;const nb=cur[nr*cols+nc];if(e.strategy===0&&nb.strategy===0)score+=1;else if(e.strategy===1&&nb.strategy===0)score+=b;}return{...e,score};});cur=sc.map((e,i)=>{let best=e;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=e.row+dr,nc=e.col+dc;if(nr<0||nr>=rows||nc<0||nc>=cols)continue;const nb=sc[nr*cols+nc];if(nb.score>best.score)best=nb;}let strategy=best.strategy;if(Math.random()<p.noise)strategy=Math.random()<.5?0:1;const color=strategy===0?\`hsl(\${210+e.score*4},70%,\${45+e.score*3}%)\`:\`hsl(\${e.score*3},70%,\${40+e.score*3}%)\`;return{...e,strategy,color};});}return cur;}` }
-    }
-  }
+const CATEGORIES = {
+  physics: { label: 'Physics', icon: '⚛️', color: '#4a9eff' },
+  chemistry: { label: 'Chemistry', icon: '⚗️', color: '#3ecf8e' },
+  biology: { label: 'Biology', icon: '🧬', color: '#ff6b6b' },
+  mathematics: { label: 'Mathematics', icon: '📐', color: '#f5a623' },
+  custom: { label: 'My Simulations', icon: '📁', color: '#cc5de8' }
 };
+
+let presetCatalogue = {};
+let presetsLoaded = false;
+
+function getCategory(catKey) {
+  return CATEGORIES[catKey] || CATEGORIES.custom;
+}
+
+function dbRowToSim(row) {
+  return {
+    name: row.name,
+    icon: row.icon || '🔬',
+    desc: row.description || '',
+    concepts: row.concepts || [],
+    objectives: row.objectives || [],
+    params: row.param_docs || [],
+    code: row.code || '',
+    slug: row.slug,
+    presetKey: row.preset_key,
+    isPreset: true,
+    isCustom: false
+  };
+}
+
+async function loadPresets() {
+  if (presetsLoaded) return presetCatalogue;
+  try {
+    const { data, error } = await supabaseClient
+      .from('simulations')
+      .select('*')
+      .eq('is_preset', true)
+      .order('name');
+    if (error) throw error;
+    presetCatalogue = {};
+    (data || []).forEach(row => {
+      const cat = row.category || 'custom';
+      if (!presetCatalogue[cat]) presetCatalogue[cat] = {};
+      presetCatalogue[cat][row.preset_key] = dbRowToSim(row);
+    });
+  } catch (e) {
+    console.warn('Failed to load presets:', e.message);
+    presetCatalogue = {};
+  }
+  presetsLoaded = true;
+  return presetCatalogue;
+}
+
+function findPreset(presetKey) {
+  for (const [catKey, sims] of Object.entries(presetCatalogue)) {
+    if (sims[presetKey]) return { catKey, simKey: presetKey, sim: sims[presetKey] };
+  }
+  return null;
+}
 
 // ═══════════════════════════════════════════════════════
 // CUSTOM LIBRARY (localStorage)
@@ -499,8 +545,9 @@ function saveLib(lib){try{localStorage.setItem('sf_lib',JSON.stringify(lib));}ca
 // ═══════════════════════════════════════════════════════
 function buildIndex(){
   const idx=[];
-  Object.entries(CATALOGUE).forEach(([catKey,cat])=>{
-    Object.entries(cat.sims).forEach(([simKey,sim])=>{
+  Object.entries(presetCatalogue).forEach(([catKey,sims])=>{
+    const cat=getCategory(catKey);
+    Object.entries(sims).forEach(([simKey,sim])=>{
       idx.push({catKey,simKey,sim,cat,isCustom:false});
     });
   });
@@ -523,11 +570,11 @@ function encodeShare(code){
 function decodeShare(s){
   try{return decodeURIComponent(escape(atob(s)));}catch{return null;}
 }
-function getShareUrl(type,id,code){
-  const base=location.href.split('#')[0];
+function getShareUrl(type,id,code,slug){
+  if(type==='slug'&&slug) return location.origin+'/s/'+slug;
+  const base=location.origin;
   if(type==='preset') return base+'#sim/'+id;
   if(type==='custom_saved') return base+'#custom/'+id;
-  // Encode code in URL
   const enc=encodeShare(code);
   if(enc.length<4000) return base+'#share/'+enc;
   return null;
@@ -542,6 +589,7 @@ function copyToClipboard(text){
 // ROUTING — parse URL on load
 // ═══════════════════════════════════════════════════════
 async function handleRoute(){
+  await loadPresets();
   const path=location.pathname;
   const slugMatch=path.match(/^\/s\/([a-z0-9]+)$/);
   if(slugMatch){
@@ -554,13 +602,13 @@ async function handleRoute(){
   const parts=hash.split('/');
   const type=parts[0];
   if(type==='sim'&&parts[1]){
-    for(const[catKey,cat] of Object.entries(CATALOGUE)){
-      if(cat.sims[parts[1]]){openSim(catKey,parts[1],false);return;}
-    }
+    const found=findPreset(parts[1]);
+    if(found){openSim(found.catKey,found.simKey,false);return;}
   }
   if(type==='share'&&parts[1]){
     const code=decodeShare(parts.slice(1).join('/'));
     if(code){
+      resetCloudState();
       openEditor({name:'Shared Simulation',icon:'🔗',desc:'Shared via link.',concepts:[],objectives:[],params:[],code,isCustom:true},'custom','shared',true);return;
     }
   }
@@ -593,19 +641,22 @@ function goHome(){
 }
 
 function openSim(catKey,simKey,pushHistory=true){
-  const cat=CATALOGUE[catKey];
-  if(!cat)return;
-  const sim=cat.sims[simKey];
+  resetCloudState();
+  const sim=presetCatalogue[catKey]?.[simKey];
   if(!sim)return;
+  const cat=getCategory(catKey);
   simIndex=buildIndex();
   currentIndexPos=simIndex.findIndex(s=>s.catKey===catKey&&s.simKey===simKey);
   openEditor(sim,catKey,simKey,pushHistory);
 }
 
 function openEditorFromCustom(id,pushHistory=true){
+  resetCloudState();
   const lib=getLib();
   const sim=lib[id];
   if(!sim)return;
+  if(sim.slug)currentSimSlug=sim.slug;
+  if(sim.cloudId)currentSimId=sim.cloudId;
   simIndex=buildIndex();
   currentIndexPos=simIndex.findIndex(s=>s.simKey===id&&s.isCustom);
   openEditor(sim,'custom',id,pushHistory);
@@ -621,13 +672,13 @@ function openEditor(sim,catKey,simKey,pushHistory=true){
   document.getElementById('fps-badge').style.display='';
   document.getElementById('new-sim-btn-top').style.display='none';
 
-  const cat=CATALOGUE[catKey]||{label:'My Simulations',icon:'📁'};
+  const cat=getCategory(catKey);
   document.getElementById('bc-cat').textContent=cat.icon+' '+cat.label;
   document.getElementById('bc-name').textContent=sim.name;
 
   currentSimMeta={catKey,simKey,sim,isCustom:sim.isCustom||catKey==='custom'};
 
-  codeEditor.value=sim.code||'';
+  setEditorCode(sim.code||'',sim.isPreset||isViewOnly);
   clearConsoles(); setStatus('idle');
   resizeCanvas();
   ctx.fillStyle=canvasBg; ctx.fillRect(0,0,canvasW,canvasH);
@@ -647,6 +698,7 @@ function openEditor(sim,catKey,simKey,pushHistory=true){
 }
 
 function newSim(){
+  resetCloudState();
   simIndex=buildIndex();currentIndexPos=-1;
   const blankSim={name:'Untitled',icon:'🔬',desc:'',concepts:[],objectives:[],params:[],code:BLANK_CODE,isCustom:true};
   currentSimMeta={catKey:'custom',simKey:null,sim:blankSim,isCustom:true};
@@ -693,6 +745,10 @@ function updateNavArrows(){
 const CAT_COLORS={physics:'#4a9eff',chemistry:'#3ecf8e',biology:'#ff6b6b',mathematics:'#f5a623',custom:'#cc5de8'};
 
 function renderHome(){
+  renderHomeSync();
+}
+
+function renderHomeSync(){
   const q=(document.getElementById('home-search').value||'').toLowerCase();
   // Category filter chips
   const cf=document.getElementById('cat-filter');
@@ -700,12 +756,13 @@ function renderHome(){
     const allChip=document.createElement('span');allChip.className='cat-chip active';allChip.textContent='All';
     allChip.style.background=activeCat==='all'?'#555':'';
     allChip.onclick=()=>{activeCat='all';renderHome();};cf.appendChild(allChip);
-    Object.entries(CATALOGUE).forEach(([key,cat])=>{
+    Object.keys(CATEGORIES).filter(k=>k!=='custom').forEach(key=>{
+      const cat=getCategory(key);
       const chip=document.createElement('span');chip.className='cat-chip';chip.textContent=cat.icon+' '+cat.label;
       chip.dataset.cat=key;chip.onclick=()=>{activeCat=key;renderHome();};cf.appendChild(chip);
     });
-    const custChip=document.createElement('span');custChip.className='cat-chip';custChip.textContent='📁 My Simulations';
-    custChip.dataset.cat='custom';custChip.onclick=()=>{activeCat='custom';renderHome();};cf.appendChild(custChip);
+    const myChip=document.createElement('span');myChip.className='cat-chip';myChip.textContent='📁 My Simulations';
+    myChip.dataset.cat='custom';myChip.onclick=()=>{activeCat='custom';renderHome();};cf.appendChild(myChip);
   }
   cf.querySelectorAll('.cat-chip').forEach(c=>{
     const isActive=(c.dataset.cat||'all')===activeCat||(!c.dataset.cat&&activeCat==='all');
@@ -720,8 +777,8 @@ function renderHome(){
   // Presets
   const lib=getLib();
   const allCats=[
-    ...Object.entries(CATALOGUE).map(([k,v])=>({key:k,cat:v,sims:Object.entries(v.sims).map(([sk,s])=>({sk,s,isCustom:false})),isCustom:false})),
-    {key:'custom',cat:{label:'My Simulations',icon:'📁'},sims:Object.entries(lib).map(([id,s])=>({sk:id,s,isCustom:true})),isCustom:true}
+    ...Object.entries(presetCatalogue).map(([k,sims])=>({key:k,cat:getCategory(k),sims:Object.entries(sims).map(([sk,s])=>({sk,s,isCustom:false})),isCustom:false})),
+    {key:'custom',cat:getCategory('custom'),sims:Object.entries(lib).map(([id,s])=>({sk:id,s,isCustom:true})),isCustom:true}
   ];
 
   allCats.forEach(({key,cat,sims,isCustom})=>{
@@ -745,7 +802,7 @@ function renderHome(){
       card.onclick=()=>ic?openEditorFromCustom(sk):openSim(key,sk);
       if(ic){
         card.querySelector('.sim-card-del').onclick=e=>{e.stopPropagation();if(confirm('Delete?')){const l=getLib();delete l[sk];saveLib(l);renderHome();}};
-        card.querySelector('.sim-card-shared').onclick=e=>{e.stopPropagation();const url=getShareUrl('custom_saved',sk,s.code);if(url)copyToClipboard(url);};
+        card.querySelector('.sim-card-shared').onclick=e=>{e.stopPropagation();const url=s.slug?getShareUrl('slug',null,null,s.slug):getShareUrl('custom_saved',sk,s.code);if(url)copyToClipboard(url);else showToast('Save to cloud first for a shareable link');};
       }
       grid.appendChild(card);
     });
@@ -758,6 +815,13 @@ function renderHome(){
     }
     sec.appendChild(grid);container.appendChild(sec);
   });
+
+  if(!Object.keys(presetCatalogue).length&&activeCat!=='custom'){
+    const empty=document.createElement('div');
+    empty.style.cssText='color:var(--text3);font-size:12px;padding:24px;text-align:center';
+    empty.textContent='Built-in simulations loading from database… If empty, run supabase/seed_presets.sql in Supabase.';
+    container.appendChild(empty);
+  }
 }
 
 function scrollToSims(){document.getElementById('home-sims').scrollIntoView({behavior:'smooth'});}
@@ -779,8 +843,8 @@ function renderDrawer(){
   const q=(document.getElementById('drawer-search').value||'').toLowerCase();
   const body=document.getElementById('drawer-body');body.innerHTML='';
   const allCats=[
-    ...Object.entries(CATALOGUE).map(([k,v])=>({key:k,cat:v,sims:Object.entries(v.sims).map(([sk,s])=>({sk,s,isCustom:false}))})),
-    {key:'custom',cat:{label:'My Simulations',icon:'📁'},sims:Object.entries(getLib()).map(([id,s])=>({sk:id,s,isCustom:true}))}
+    ...Object.entries(presetCatalogue).map(([k,sims])=>({key:k,cat:getCategory(k),sims:Object.entries(sims).map(([sk,s])=>({sk,s,isCustom:false}))})),
+    {key:'custom',cat:getCategory('custom'),sims:Object.entries(getLib()).map(([id,s])=>({sk:id,s,isCustom:true}))}
   ];
   allCats.forEach(({key,cat,sims})=>{
     const filtered=sims.filter(({s})=>!q||s.name.toLowerCase().includes(q));
@@ -808,30 +872,37 @@ function renderDrawer(){
 // ═══════════════════════════════════════════════════════
 function renderAboutPanel(sim,catKey,simKey){
   const panel=document.getElementById('about-panel');
-  const cat=CATALOGUE[catKey]||{label:'My Simulations',icon:'📁',color:'#cc5de8'};
+  const cat=getCategory(catKey);
   const color=cat.color||CAT_COLORS[catKey]||'#7c6af7';
   const isPreset=!sim.isCustom&&catKey!=='custom';
-  const shareUrl=isPreset
-    ?getShareUrl('preset',simKey,sim.code)
-    :simKey?getShareUrl('custom_saved',simKey,sim.code):getShareUrl('share',null,sim.code||codeEditor.value);
+  let shareUrl;
+  if(currentSimSlug) shareUrl=getShareUrl('slug',null,null,currentSimSlug);
+  else if(isPreset) shareUrl=getShareUrl('preset',simKey,sim.code);
+  else if(simKey&&!String(simKey).startsWith('shared_')) shareUrl=getShareUrl('custom_saved',simKey,sim.code);
+  else shareUrl=getShareUrl('share',null,sim.code||codeEditor.value);
+
+  const shareDisplay=shareUrl?(shareUrl.length>60?shareUrl.substring(0,60)+'…':shareUrl):'Save to cloud first to get a shareable link';
+  const safeShareUrl=(shareUrl||'').replace(/'/g,"\\'");
 
   const concepts=(sim.concepts||[]).map(c=>`<span class="concept-chip">${c}</span>`).join('');
   const objectives=(sim.objectives||[]).map(o=>`<li style="font-size:11.5px;color:var(--text2);line-height:1.6;margin-bottom:3px">${o}</li>`).join('');
   const params=(sim.params||[]).map(p=>`<div class="param-doc"><span class="param-doc-name">${p.n}</span><span class="param-doc-desc">${p.d}</span></div>`).join('');
+  const statsHtml=sim.views!=null?`<div class="about-stats"><span>👁 ${sim.views||0} views</span><span>♥ ${sim.likes||0} likes</span></div>`:'';
 
   panel.innerHTML=`
     <div class="about-badge" style="background:${color}22;border:1px solid ${color}44;color:${color}">${cat.icon} ${cat.label}</div>
     <div class="about-title">${sim.icon||'🔬'} ${sim.name}</div>
+    ${statsHtml}
     ${sim.desc?`<div class="about-desc">${sim.desc}</div>`:''}
     ${concepts?`<div class="about-section"><h4>Key Concepts</h4><div>${concepts}</div></div>`:''}
     ${objectives?`<div class="about-section"><h4>Learning Objectives</h4><ul style="padding-left:14px">${objectives}</ul></div>`:''}
     ${params?`<div class="about-section"><h4>Parameter Guide</h4>${params}</div>`:''}
     <div class="about-share">
       <h4>Share this simulation</h4>
-      <div class="share-url" onclick="copyToClipboard('${shareUrl||''}')" title="Click to copy">${shareUrl?shareUrl.substring(0,60)+(shareUrl.length>60?'…':''):'Code too large to share via URL — save it first'}</div>
+      <div class="share-url" onclick="copyToClipboard('${safeShareUrl}')" title="Click to copy">${shareDisplay}</div>
       <div class="share-row">
-        <button class="share-btn" onclick="copyToClipboard('${shareUrl||''}')">📋 Copy link</button>
-        <button class="share-btn" onclick="shareCode()">📤 Share code</button>
+        ${shareUrl?`<button class="share-btn" onclick="copyToClipboard('${safeShareUrl}')">📋 Copy link</button>`:''}
+        ${isViewOnly?`<button class="share-btn" onclick="forkSimulation()">⑂ Fork to my library</button>`:'<button class="share-btn" onclick="shareCode()">📤 Share code</button>'}
       </div>
     </div>`;
 }
@@ -848,6 +919,7 @@ function shareCode(){
 let currentSimMeta=null;
 
 function openSaveModal(){
+  if(isViewOnly){showToast('Fork this simulation first to save your own copy');return;}
   document.getElementById('modal-name').value=currentSimMeta?.sim?.name||'';
   document.getElementById('modal-cat').value=currentSimMeta?.catKey==='custom'?'custom':'custom';
   document.getElementById('modal-desc').value=currentSimMeta?.sim?.desc||'';
@@ -883,16 +955,20 @@ async function saveSimulation(){
       showToast('Updated: '+name);
     }else{
       const slug=Math.random().toString(36).substring(2,10);
-      const{data,error}=await supabaseClient.from('simulations').insert({slug,name,description:desc,icon,code:codeEditor.value,author_id:currentUser.id,is_public:true}).select().single();
+      const insertData={slug,name,description:desc,icon,code:codeEditor.value,author_id:currentUser.id,is_public:true};
+      if(forkedFromId)insertData.forked_from=forkedFromId;
+      const{data,error}=await supabaseClient.from('simulations').insert(insertData).select().single();
       if(error)throw error;
       currentSimId=data.id;
       currentSimSlug=data.slug;
+      currentAuthorId=currentUser.id;
+      forkedFromId=null;
       showToast('Saved: '+name);
-      history.replaceState(null,'','/s/'+slug);
+      history.replaceState(null,'','/s/'+data.slug);
     }
     const lib=getLib();
-    const id=currentSimMeta?.simKey&&currentSimMeta?.isCustom?currentSimMeta.simKey:'sim_'+Date.now();
-    lib[id]={name,desc,icon,objectives,code:codeEditor.value,saved:Date.now()};
+    const id=currentSimMeta?.simKey&&currentSimMeta?.isCustom&&!String(currentSimMeta.simKey).startsWith('shared_')?currentSimMeta.simKey:'sim_'+Date.now();
+    lib[id]={name,desc,icon,objectives,code:codeEditor.value,saved:Date.now(),slug:currentSimSlug,cloudId:currentSimId};
     saveLib(lib);
     if(currentSimMeta)currentSimMeta.simKey=id;
     document.getElementById('bc-name').textContent=name;
@@ -915,7 +991,44 @@ let trailEnabled=true,canvasBg='#090a0d';
 
 const canvas=document.getElementById('sim-canvas');
 const ctx=canvas.getContext('2d');
-const codeEditor=document.getElementById('code-editor');
+let cmEditor=null;
+const codeEditor={
+  get value(){return cmEditor?cmEditor.getValue():'';},
+  set value(v){if(cmEditor)cmEditor.setValue(v||'');},
+  get readOnly(){return cmEditor?cmEditor.getOption('readOnly'):false;},
+  set readOnly(v){if(cmEditor){cmEditor.setOption('readOnly',!!v);cmEditor.getWrapperElement().classList.toggle('read-only',!!v);}}
+};
+function initCodeEditor(){
+  cmEditor=CodeMirror.fromTextArea(document.getElementById('code-editor'),{
+    mode:'javascript',theme:'material-darker',lineNumbers:true,indentUnit:2,tabSize:2,
+    lineWrapping:true,matchBrackets:true,autoCloseBrackets:true,indentWithTabs:false
+  });
+  cmEditor.setSize('100%','100%');
+  cmEditor.on('keydown',(cm,e)=>{
+    if(e.key==='Tab'){e.preventDefault();cm.replaceSelection('  ','end');}
+    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();compileAndRun();}
+  });
+}
+function setEditorCode(code,autoFormat){
+  codeEditor.value=code||'';
+  if(autoFormat&&cmEditor&&typeof js_beautify==='function'){
+    try{cmEditor.setValue(js_beautify(cmEditor.getValue(),{indent_size:2,preserve_newlines:true,max_preserve_newlines:2,brace_style:'collapse,preserve-inline'}));}catch{}
+  }
+}
+function formatCode(){
+  if(!cmEditor||typeof js_beautify!=='function')return;
+  try{
+    setEditorCode(cmEditor.getValue(),true);
+    showToast('Code formatted');
+  }catch(e){showToast('Format failed');}
+}
+function toggleMobilePanel(){
+  const left=document.getElementById('left-panel');
+  const right=document.getElementById('right-panel');
+  if(left.classList.contains('minimized')){left.classList.remove('minimized');right.classList.remove('minimized');}
+  else if(left.classList.contains('maximized')){left.classList.remove('maximized');right.classList.remove('minimized');}
+  else{left.classList.add('maximized');right.classList.add('minimized');}
+}
 const errorConsole=document.getElementById('error-console');
 const okConsole=document.getElementById('ok-console');
 const paramsInner=document.getElementById('params-inner');
@@ -939,6 +1052,7 @@ function switchTab(tab){
   document.getElementById('about-panel').style.display=tab==='about'?'block':'none';
   document.getElementById('guide-panel').style.display=tab==='guide'?'block':'none';
   document.getElementById('settings-panel').style.display=tab==='settings'?'flex':'none';
+  if(tab==='code'&&cmEditor)setTimeout(()=>cmEditor.refresh(),50);
 }
 
 function applySettings(){
@@ -1037,10 +1151,6 @@ function doStep(){
   stepFrame();setStatus('pause');
 }
 
-codeEditor.addEventListener('keydown',e=>{
-  if(e.key==='Tab'){e.preventDefault();const s=codeEditor.selectionStart,end=codeEditor.selectionEnd;codeEditor.value=codeEditor.value.substring(0,s)+'  '+codeEditor.value.substring(end);codeEditor.selectionStart=codeEditor.selectionEnd=s+2;}
-  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();compileAndRun();}
-});
 
 // ═══════════════════════════════════════════════════════
 // TOAST
@@ -1105,6 +1215,60 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 let currentUser = null;
 let currentSimId = null;
 let currentSimSlug = null;
+let currentAuthorId = null;
+let isViewOnly = false;
+let forkedFromId = null;
+
+function resetCloudState(){
+  currentSimId=null;currentSimSlug=null;currentAuthorId=null;
+  isViewOnly=false;forkedFromId=null;
+  setEditorMode(false);
+}
+
+function setEditorMode(viewOnly){
+  isViewOnly=viewOnly;
+  const banner=document.getElementById('view-only-banner');
+  const saveBtn=document.getElementById('save-btn');
+  const forkBtn=document.getElementById('fork-btn');
+  if(banner) banner.classList.toggle('visible',viewOnly);
+  codeEditor.readOnly=viewOnly;
+  if(saveBtn) saveBtn.style.display=viewOnly?'none':'';
+  if(forkBtn) forkBtn.classList.toggle('visible',viewOnly);
+}
+
+function forkSimulation(){
+  if(!currentSimMeta)return;
+  const sim=currentSimMeta.sim;
+  const forkName=sim.name.startsWith('Fork of ')?sim.name:'Fork of '+sim.name;
+  const id='sim_'+Date.now();
+  isViewOnly=false;
+  currentSimId=null;
+  currentSimSlug=null;
+  const forkedSim={...sim,name:forkName,isCustom:true,objectives:sim.objectives||[]};
+  currentSimMeta={catKey:'custom',simKey:id,sim:forkedSim,isCustom:true};
+  document.getElementById('bc-cat').textContent='📁 My Simulations';
+  document.getElementById('bc-name').textContent=forkName;
+  const lib=getLib();
+  lib[id]={name:forkName,desc:sim.desc||'',icon:sim.icon||'🔬',objectives:sim.objectives||[],code:codeEditor.value,saved:Date.now(),forkedFrom:forkedFromId};
+  saveLib(lib);
+  setEditorMode(false);
+  switchTab('code');
+  showToast(currentUser?'Added to your library — edit and save to cloud':'Added to your library locally');
+}
+
+async function refreshOwnership(){
+  if(!currentSimSlug||!currentAuthorId)return;
+  const isOwner=currentUser&&currentUser.id===currentAuthorId;
+  if(isOwner&&!currentSimId){
+    const{data}=await supabaseClient.from('simulations').select('id').eq('slug',currentSimSlug).single();
+    if(data)currentSimId=data.id;
+  }
+  const shouldViewOnly=!isOwner;
+  if(shouldViewOnly!==isViewOnly){
+    if(shouldViewOnly){currentSimId=null;}
+    setEditorMode(shouldViewOnly);
+  }
+}
 
 // ═══════════════════════════════════════════════════════
 // AUTHENTICATION
@@ -1116,6 +1280,7 @@ async function initAuth() {
   supabaseClient.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
     renderAuthSection();
+    refreshOwnership();
   });
 }
 
@@ -1172,6 +1337,9 @@ async function showMySimulations() {
     const sim = sims[0];
     currentSimSlug = sim.slug;
     currentSimId = sim.id;
+    currentAuthorId = sim.author_id;
+    isViewOnly = false;
+    forkedFromId = null;
     
     const simData = {
       name: sim.name || 'Untitled',
@@ -1185,50 +1353,10 @@ async function showMySimulations() {
     };
     
     openEditor(simData, 'custom', sim.id, false);
+    setEditorMode(false);
+    history.replaceState(null,'','/s/'+sim.slug);
   } catch(e) {
     showToast('Failed to load simulations: ' + e.message);
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-// SAVE SIMULATION TO DATABASE
-// ═══════════════════════════════════════════════════════
-async function saveSimulationToSupabase() {
-  if (!currentUser) { 
-    showToast('Please sign in to save to cloud'); 
-    return; 
-  }
-  
-  const name = document.getElementById('modal-name').value.trim() || 'Untitled';
-  const code = document.getElementById('code-editor').value;
-  
-  try {
-    if (currentSimId) {
-      const { error } = await supabaseClient.from('simulations').update({ 
-        name, 
-        code, 
-        updated_at: new Date().toISOString() 
-      }).eq('id', currentSimId);
-      if (error) throw error;
-      showToast('Updated: ' + name);
-    } else {
-      const slug = Math.random().toString(36).substring(2, 10);
-      const { data, error } = await supabaseClient.from('simulations').insert({ 
-        slug, 
-        name, 
-        code, 
-        author_id: currentUser.id, 
-        is_public: true 
-      }).select().single();
-      if (error) throw error;
-      currentSimId = data.id;
-      currentSimSlug = data.slug;
-      showToast('Saved: ' + name);
-      history.replaceState(null, '', '/s/' + slug);
-    }
-    closeSaveModal();
-  } catch(e) { 
-    showToast('Save failed: ' + e.message); 
   }
 }
 
@@ -1241,10 +1369,21 @@ async function loadSimulationBySlug(slug) {
   }
   
   supabaseClient.rpc('increment_views', { sim_id: sim.id }).catch(() => {});
-  currentSimSlug = sim.slug;
-  currentSimId = sim.id;
   
-  // Create simulation object in expected format
+  currentSimSlug = sim.slug;
+  currentAuthorId = sim.author_id;
+  const isOwner = currentUser && currentUser.id === sim.author_id;
+  
+  if (isOwner) {
+    currentSimId = sim.id;
+    isViewOnly = false;
+    forkedFromId = null;
+  } else {
+    currentSimId = null;
+    isViewOnly = true;
+    forkedFromId = sim.id;
+  }
+  
   const simData = {
     name: sim.name || 'Untitled',
     icon: sim.icon || '🔬',
@@ -1253,11 +1392,17 @@ async function loadSimulationBySlug(slug) {
     objectives: [],
     params: [],
     code: sim.code || '',
-    isCustom: true
+    isCustom: true,
+    views: sim.views,
+    likes: sim.likes
   };
   
-  // Open editor with the loaded simulation
-  openEditor(simData, 'custom', sim.id, false);
+  openEditor(simData, 'custom', isOwner ? sim.id : 'shared_'+sim.slug, false);
+  setEditorMode(isViewOnly);
+  if (isViewOnly) {
+    switchTab('about');
+    setTimeout(() => compileAndRun(), 100);
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1274,9 +1419,14 @@ async function loadSimulationBySlug(slug) {
 // ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
-initAuth();
-renderHome();
-handleRoute();
+async function initApp(){
+  initCodeEditor();
+  await initAuth();
+  await loadPresets();
+  renderHome();
+  await handleRoute();
+}
+initApp();
 </script>
 </body>
 </html>
