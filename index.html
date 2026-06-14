@@ -632,7 +632,8 @@ function getBaseUrl(){
   }
   if (dir && !dir.endsWith('/')) dir += '/';
   if (!dir.startsWith('/')) dir = '/' + dir;
-  return location.origin + (dir === '/' ? '' : dir);
+  const base = location.origin + (dir === '/' ? '' : dir);
+  return base.endsWith('/') ? base : base + '/';
 }
 
 function getShareUrl(type,id,code,slug){
