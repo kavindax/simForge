@@ -618,9 +618,26 @@ function encodeShare(code){
 function decodeShare(s){
   try{return decodeURIComponent(escape(atob(s)));}catch{return null;}
 }
+function getBaseUrl(){
+  const path = location.pathname;
+  let dir = path;
+  const sIdx = path.toLowerCase().indexOf('/s/');
+  if (sIdx !== -1) {
+    dir = path.substring(0, sIdx);
+  } else {
+    const lastSlash = path.lastIndexOf('/');
+    if (lastSlash !== -1 && path.substring(lastSlash).includes('.')) {
+      dir = path.substring(0, lastSlash);
+    }
+  }
+  if (dir && !dir.endsWith('/')) dir += '/';
+  if (!dir.startsWith('/')) dir = '/' + dir;
+  return location.origin + (dir === '/' ? '' : dir);
+}
+
 function getShareUrl(type,id,code,slug){
-  if(type==='slug'&&slug) return location.origin+'/s/'+encodeURIComponent(slug);
-  const base=location.origin;
+  const base = getBaseUrl();
+  if(type==='slug'&&slug) return base+'s/'+encodeURIComponent(slug);
   if(type==='preset') return base+'#sim/'+id;
   if(type==='custom_saved') return base+'#custom/'+id;
   const enc=encodeShare(code);
@@ -664,7 +681,7 @@ function copyToClipboard(text){
 // ═══════════════════════════════════════════════════════
 async function handleRoute(){
   const path=location.pathname;
-  const slugMatch=path.match(/^\/s\/([a-z0-9-]+)$/i);
+  const slugMatch=path.match(/\/s\/([a-z0-9-]+)$/i);
   if(slugMatch){
     await loadSimulationBySlug(decodeURIComponent(slugMatch[1]));
     return;
@@ -710,7 +727,7 @@ function goHome(){
   document.getElementById('lib-toggle-btn').style.display='none';
   document.getElementById('fps-badge').style.display='none';
   document.getElementById('new-sim-btn-top').style.display='';
-  history.pushState(null,'',location.pathname);
+  history.pushState(null,'',getBaseUrl());
   renderHome();
 }
 
@@ -735,7 +752,7 @@ function openEditorFromCustom(id,pushHistory=true){
   simIndex=buildIndex();
   currentIndexPos=simIndex.findIndex(s=>s.simKey===id&&s.isCustom);
   openEditor(sim,'custom',id,pushHistory);
-  if(pushHistory&&sim.slug)history.replaceState(null,'','/s/'+sim.slug);
+  if(pushHistory&&sim.slug)history.replaceState(null,'',getBaseUrl()+'s/'+sim.slug);
   if(!sim.slug&&sim.cloudId&&currentUser)fetchSlugForSim(id,sim.cloudId);
 }
 
@@ -746,7 +763,7 @@ async function fetchSlugForSim(localId,cloudId){
     currentSimSlug=data.slug;
     const lib=getLib();
     if(lib[localId]){lib[localId].slug=data.slug;saveLib(lib);}
-    history.replaceState(null,'','/s/'+data.slug);
+    history.replaceState(null,'',getBaseUrl()+'s/'+data.slug);
     if(currentSimMeta?.simKey===localId){
       currentSimMeta.sim={...currentSimMeta.sim,slug:data.slug};
       renderAboutPanel(currentSimMeta.sim,'custom',localId);
@@ -783,9 +800,9 @@ function openEditor(sim,catKey,simKey,pushHistory=true){
   updateNavArrows();
 
   if(pushHistory){
-    if(currentSimSlug)history.replaceState(null,'','/s/'+currentSimSlug);
-    else if(catKey==='custom')history.pushState(null,'',location.pathname+'#custom/'+simKey);
-    else history.pushState(null,'',location.pathname+'#sim/'+simKey);
+    if(currentSimSlug)history.replaceState(null,'',getBaseUrl()+'s/'+currentSimSlug);
+    else if(catKey==='custom')history.pushState(null,'',getBaseUrl()+'#custom/'+simKey);
+    else history.pushState(null,'',getBaseUrl()+'#sim/'+simKey);
   }
 }
 
@@ -1062,7 +1079,7 @@ async function saveSimulation(){
       currentAuthorId=currentUser.id;
       forkedFromId=null;
       showToast('Saved: '+name);
-      history.replaceState(null,'','/s/'+data.slug);
+      history.replaceState(null,'',getBaseUrl()+'s/'+data.slug);
     }
     const lib=getLib();
     const id=currentSimMeta?.simKey&&currentSimMeta?.isCustom&&!String(currentSimMeta.simKey).startsWith('shared_')?currentSimMeta.simKey:'sim_'+Date.now();
@@ -1071,9 +1088,9 @@ async function saveSimulation(){
     if(currentSimMeta)currentSimMeta.simKey=id;
     document.getElementById('bc-name').textContent=name;
     closeSaveModal();
-    if(currentSimSlug)history.replaceState(null,'','/s/'+currentSimSlug);
+    if(currentSimSlug)history.replaceState(null,'',getBaseUrl()+'s/'+currentSimSlug);
     renderAboutPanel({...currentSimMeta?.sim,name,desc,icon,objectives,isCustom:true,slug:currentSimSlug,cloudId:currentSimId},'custom',id);
-    if(currentSimSlug)showToast('Saved — share link: '+location.origin+'/s/'+currentSimSlug);
+    if(currentSimSlug)showToast('Saved — share link: '+getBaseUrl()+'s/'+currentSimSlug);
   }catch(e){
     showToast('Save failed: '+e.message);
   }
@@ -1459,7 +1476,7 @@ async function showMySimulations() {
     
     openEditor(simData, 'custom', sim.id, false);
     setEditorMode(false);
-    history.replaceState(null,'','/s/'+sim.slug);
+    history.replaceState(null,'',getBaseUrl()+'s/'+sim.slug);
   } catch(e) {
     showToast('Failed to load simulations: ' + e.message);
   }
@@ -1476,7 +1493,7 @@ async function loadSimulationBySlug(slug) {
     return;
   }
   
-  supabaseClient.rpc('increment_views', { sim_id: sim.id }).catch(() => {});
+  Promise.resolve(supabaseClient.rpc('increment_views', { sim_id: sim.id })).catch(() => {});
   
   currentSimSlug = sim.slug;
   currentAuthorId = sim.author_id;
@@ -1509,7 +1526,7 @@ async function loadSimulationBySlug(slug) {
   
   openEditor(simData, 'custom', isOwner ? sim.id : 'shared_'+sim.slug, false);
   setEditorMode(isViewOnly);
-  history.replaceState(null,'','/s/'+sim.slug);
+  history.replaceState(null,'',getBaseUrl()+'s/'+sim.slug);
   if (isViewOnly) {
     switchTab('about');
     setTimeout(() => compileAndRun(), 100);
@@ -1533,7 +1550,7 @@ async function loadSimulationBySlug(slug) {
 async function initApp(){
   initCodeEditor();
   await initAuth();
-  const isSlugRoute=/^\/s\/[a-z0-9-]+$/i.test(location.pathname);
+  const isSlugRoute=/\/s\/[a-z0-9-]+$/i.test(location.pathname);
   if(!isSlugRoute) renderHome();
   await handleRoute();
 }
