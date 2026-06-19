@@ -257,9 +257,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .drawer-sim-cat{font-size:10px;color:var(--text3);}
 .drawer-sim-tag{font-size:10px;padding:1px 5px;border-radius:3px;flex-shrink:0;}
 
-/* Save modal */
-#save-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;}
-#save-modal.open{display:flex;}
+/* Save and Auth modals */
+#save-modal, #auth-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;}
+#save-modal.open, #auth-modal.open{display:flex;}
 .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:20px;width:340px;display:flex;flex-direction:column;gap:12px;}
 .modal-title{font-size:14px;font-weight:600;}
 .modal-row{display:flex;flex-direction:column;gap:4px;}
@@ -506,12 +506,36 @@ const trail=[...(e.trail||[]),{x:e.x,y:e.y}].slice(-30);
     <div class="modal-row"><label>Learning objectives (one per line)</label><textarea id="modal-obj" placeholder="Students will understand…" style="min-height:48px"></textarea></div>
     <div id="modal-icon-row" class="modal-row"><label>Icon (emoji)</label><input id="modal-icon" placeholder="🔬" maxlength="4" style="width:70px"></div>
     <div id="modal-auth-warning" style="font-size:11px;color:var(--amber);margin:4px 0;display:none;line-height:1.4;">
-      ⚠️ You must be signed in when saving for a cloud share link. Local-only saves cannot produce /s/ links. <a href="#" onclick="loginWithGitHub(); return false;" style="color:var(--accent);text-decoration:underline;font-weight:600;margin-left:4px;">Sign in</a>
+      ⚠️ You must be signed in when saving for a cloud share link. Local-only saves cannot produce /s/ links. <a href="#" onclick="openAuthModal(); return false;" style="color:var(--accent);text-decoration:underline;font-weight:600;margin-left:4px;">Sign in</a>
     </div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeSaveModal()">Cancel</button>
       <button class="modal-save" onclick="saveSimulation()">Save to Library</button>
     </div>
+  </div>
+</div>
+
+<!-- Auth Modal -->
+<div id="auth-modal">
+  <div class="modal-box" style="width: 320px; text-align: center; gap: 16px; padding: 24px;">
+    <div class="modal-title" style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">Sign In to SimForge</div>
+    <div style="font-size: 12px; color: var(--text2); line-height: 1.5; margin-bottom: 12px;">Sign in to save your simulations to the cloud and share them with others.</div>
+    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <button class="btn-primary" onclick="loginWithGitHub()" style="display: flex; align-items: center; justify-content: center; gap: 10px; background: #1c1d22; width: 100%; border: 1px solid var(--border2); padding: 10px; color: #fff;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Sign in with GitHub
+      </button>
+      <button class="btn-primary" onclick="loginWithGoogle()" style="display: flex; align-items: center; justify-content: center; gap: 10px; background: #ffffff; color: #1c1d22; width: 100%; border: 1px solid var(--border2); padding: 10px;">
+        <svg width="16" height="16" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.53 2.87-2.14 5.3-4.57 6.94l7.15 5.54C43.5 36.63 46.5 30.95 46.5 24z"/>
+          <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.15-5.54c-2.02 1.35-4.69 2.15-7.74 2.15-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Sign in with Google
+      </button>
+    </div>
+    <button class="modal-cancel" onclick="closeAuthModal()" style="margin-top: 6px; width: 100%;">Cancel</button>
   </div>
 </div>
 
@@ -1036,7 +1060,7 @@ function openSaveModal(){
   const authWarning = document.getElementById('modal-auth-warning');
   if(!currentUser){
     if(authWarning) authWarning.style.display = 'block';
-    showToast('<span>You must be signed in when saving for a cloud share link. Local-only saves cannot produce /s/ links.</span><button class="toast-btn" onclick="loginWithGitHub()">Sign in</button>', 6000);
+    showToast('<span>You must be signed in when saving for a cloud share link. Local-only saves cannot produce /s/ links.</span><button class="toast-btn" onclick="openAuthModal()">Sign in</button>', 6000);
   } else {
     if(authWarning) authWarning.style.display = 'none';
   }
@@ -1402,6 +1426,9 @@ async function initAuth() {
   renderAuthSection();
   supabaseClient.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
+    if (currentUser) {
+      closeAuthModal();
+    }
     renderAuthSection();
     refreshOwnership();
   });
@@ -1410,11 +1437,11 @@ async function initAuth() {
 function renderAuthSection() {
   const section = document.getElementById('auth-section');
   if (!currentUser) {
-    section.innerHTML = `<button class="tbtn" onclick="loginWithGitHub()"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> Sign in</button>`;
+    section.innerHTML = `<button class="tbtn" onclick="openAuthModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Sign in</button>`;
   } else {
-    const avatarUrl = currentUser.user_metadata?.avatar_url || '';
-    const username = currentUser.user_metadata?.user_name || 'User';
-    section.innerHTML = `<div class="user-menu"><img src="${avatarUrl}" alt="${username}" class="user-avatar" onclick="toggleUserMenu()"><div class="user-dropdown" id="user-dropdown"><div class="dropdown-item" onclick="showMySimulations()"><span>📁</span> My Simulations</div><div class="dropdown-divider"></div><div class="dropdown-item" onclick="logout()"><span></span> Sign out</div></div></div>`;
+    const avatarUrl = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || '';
+    const username = currentUser.user_metadata?.user_name || currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
+    section.innerHTML = `<div class="user-menu"><img src="${avatarUrl}" alt="${username}" class="user-avatar" onclick="toggleUserMenu()"><div class="user-dropdown" id="user-dropdown"><div class="dropdown-item" onclick="showMySimulations()"><span>📁</span> My Simulations</div><div class="dropdown-divider"></div><div class="dropdown-item" onclick="logout()"><span>🚪</span> Sign out</div></div></div>`;
   }
 }
 
@@ -1429,6 +1456,18 @@ document.addEventListener('click', (e) => {
 
 async function loginWithGitHub() { 
   await supabaseClient.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin } }); 
+}
+
+function openAuthModal() {
+  document.getElementById('auth-modal')?.classList.add('open');
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-modal')?.classList.remove('open');
+}
+
+async function loginWithGoogle() {
+  await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
 }
 
 async function logout() { 
